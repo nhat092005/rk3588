@@ -1,2 +1,4 @@
 run_id,model,epochs,seed,test_map50,test_map50_95,test_precision,test_recall
-2026-09-17_sfchd_yolo_baseline,yolo_baseline,5,42,0.6909,0.425,0.7286,0.6673
+2026-09-17_sfchd_yolov8n_baseline_5ep,yolov8n_baseline,5,42,0.6909,0.425,0.7286,0.6673
+2026-09-17_sfchd_yolov8n_baseline_100ep,yolov8n_baseline,100,42,0.7866,0.5021,0.799,0.7632
+2026-09-17_sfchd_yolov8s_baseline_100ep,yolov8s_baseline,100,42,0.809,0.5303,0.8463,0.7661

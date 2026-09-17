@@ -1,6 +1,6 @@
 dataset: sfchd
-model: yolo_baseline
-epochs: 5
+model: yolov8n_baseline
+epochs: 100
 imgsz: 640
 batch: 16
 seed: 42
