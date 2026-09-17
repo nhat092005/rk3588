@@ -73,7 +73,7 @@ def main() -> None:
     cfg = yaml.safe_load(args.config.read_text())
     model_weights = importlib.import_module(f"ai.models.{cfg['model']}").WEIGHTS
 
-    run_id = f"{datetime.date.today().isoformat()}_{cfg['dataset']}_{cfg['model']}"
+    run_id = f"{datetime.date.today().isoformat()}_{cfg['dataset']}_{cfg['model']}_{cfg['epochs']}ep"
 
     train_cfg = TrainConfig(
         model=model_weights,

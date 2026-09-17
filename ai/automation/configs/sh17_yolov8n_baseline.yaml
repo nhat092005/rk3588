@@ -1,5 +1,5 @@
 dataset: sh17
-model: yolo_baseline
+model: yolov8n_baseline
 epochs: 5
 imgsz: 640
 batch: 16
