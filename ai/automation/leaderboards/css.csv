@@ -1,0 +1,2 @@
+run_id,model,epochs,seed,test_map50,test_map50_95,test_precision,test_recall
+2026-09-17_css_yolo_baseline,yolo_baseline,5,42,0.5844,0.2821,0.7427,0.5451
