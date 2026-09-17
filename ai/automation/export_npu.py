@@ -1,18 +1,4 @@
-"""automation/'s NPU export CLI: read a finished training run_id -> call
-core/rknn/baseline.py's Tier 1 export -> record npu_benchmark.json.
-
-Run from repo root: python -m ai.automation.export_npu <run_id>
-
-This only runs the Tier 1 baseline export (ultralytics' native RKNN export,
-see core/rknn/baseline.py). The Tier 2 manual optimization pipeline
-(core_mask / op_target / hybrid quantization) lives in core/rknn/deploy.py,
-called from npu/experiments/, not here - see
-tmp/2026-09-17_baseline_rk3588_npu_optimization.md section 9.4/9.5.
-
-NOT RUNNABLE YET in this repo's current .venv (needs rknn-toolkit2 +
-torch<=2.4.0 + numpy<=1.26.4, see core/rknn/baseline.py's export_baseline()
-docstring). Written and ready to run once the shared .venv is updated.
-"""
+"""CLI to export trained model checkpoints to RKNN format."""
 import argparse
 import datetime
 import json
@@ -52,16 +38,12 @@ def main() -> None:
         "rknn_model_dir": rknn_model_dir,
         "exported_at": datetime.datetime.now().isoformat(),
         "git_commit": git_commit(),
-        # mAP-drop and latency need model.val() on the .rknn model, which
-        # ultralytics only allows running on an actual Rockchip device
-        # (RKNNBackend.load_model() raises OSError otherwise - see
-        # tmp/2026-09-17_baseline_rk3588_npu_optimization.md section 9.4).
-        # Pending board bring-up.
+        # Metrics requiring on-device inference are left unpopulated until benchmark_npu.py is run.
         "map50_95_fp32": None,
         "map50_95_int8": None,
         "latency_ms": None,
         "fps": None,
-        "status": "exported, awaiting board bring-up for mAP/latency numbers",
+        "status": "exported, mAP/latency not computed by this script yet",
     }
     out_path = run_dir / "npu_benchmark.json"
     out_path.write_text(json.dumps(benchmark, indent=2) + "\n")

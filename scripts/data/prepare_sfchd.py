@@ -1,9 +1,4 @@
-"""data/sfchd/raw/ -> data/sfchd/processed/
-
-raw/ has no author-provided split, so this script creates one: random
-80/10/10 train/val/test, seeded for reproducibility. Re-running this
-script always produces the same split.
-"""
+"""Prepare SFCHD dataset: generates reproducible 80/10/10 train/val/test splits."""
 import random
 import sys
 from pathlib import Path

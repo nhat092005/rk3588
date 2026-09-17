@@ -1,14 +1,4 @@
-"""data/sh17/raw/ -> data/sh17/processed/
-
-raw/val_files.txt is the author-provided held-out set used to produce
-the benchmark numbers in the SH17 paper (TABLE III calls it the "test"
-set) -> mapped here to processed test, kept intact so results stay
-comparable to the paper.
-
-raw/train_files.txt has no author-provided train/val split, so this
-script carves a val set out of it (90/10, seeded) for use during
-training. Re-running this script always produces the same split.
-"""
+"""Prepare SH17 dataset: splits raw images and labels into train, val, and test sets."""
 import random
 import sys
 from pathlib import Path

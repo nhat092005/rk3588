@@ -1,9 +1,4 @@
-"""automation/'s CLI: read config -> call core/trainer.py -> sort plots ->
-append to the per-dataset leaderboard.
-
-Run from repo root: python -m ai.automation.run ai/automation/configs/<name>.yaml
-Do not train by hand outside this script within automation/.
-"""
+"""CLI entrypoint for running standardized training, evaluation, and logging."""
 import argparse
 import csv
 import datetime
@@ -32,12 +27,7 @@ def git_commit() -> str:
 
 
 def sort_plots(source_dir: Path, plots_dir: Path, split_label: str) -> None:
-    """Move .jpg/.png images from source_dir (raw ultralytics output) into
-    plots_dir, sorted by content. split_label ("val" during training monitoring,
-    or "test" for the final evaluation) keeps the two calls from colliding on
-    filenames (ultralytics always names files "val_batch*.jpg" regardless of
-    which split was actually passed in).
-    """
+    """Organize generated plot artifacts into structured directories by split."""
     stats_dir = plots_dir / "dataset_stats"
     samples_dir = plots_dir / "sample_predictions" / split_label
     curves_dir = plots_dir / "eval_curves" / split_label

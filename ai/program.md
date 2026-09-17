@@ -1,26 +1,17 @@
-# program.md — agent tự lặp nghiên cứu kiến trúc
+# Autonomous Architecture Research Protocol
 
-**Trạng thái: CHƯA KÍCH HOẠT.** File này mô tả trước vòng lặp sẽ hoạt động thế nào, để khi
-có baseline chạy ổn trong `automation/leaderboards/` thì không phải thiết kế lại từ đầu.
-Đừng chạy agent theo hướng dẫn này cho tới khi có ít nhất 1 dòng kết quả thật trong
-`automation/leaderboards/<dataset>.csv` — trước đó `core/trainer.py` chưa được xác nhận
-chạy đúng, agent sẽ không có gì để so sánh.
+**Status: INACTIVE.** Requires baseline results in `automation/leaderboards/` before activation.
 
-## Vòng lặp dự kiến
+## Execution Loop
 
-1. Đọc `automation/leaderboards/<dataset>.csv`, lấy điểm `test_map50` tốt nhất hiện tại làm mốc.
-2. Sửa hoặc tạo 1 kiến trúc trong `research/experiments/<ten_moi>/draft_model.py`, ghi giả
-   thuyết vào `notes.md` (bắt buộc trích nguồn ý tưởng từ `docs/outputs/<topic>/_synthesis.md`
-   nếu có, để biết vì sao thử hướng đó).
-3. Chạy `python -m ai.automation.run` với 1 config trỏ tới kiến trúc nháp, ngân sách thời
-   gian/epoch cố định (giống nguyên tắc "5 phút cố định" của `ai/autoresearch` — số cụ thể
-   chốt khi kích hoạt, tuỳ tốc độ máy thật).
-4. So `test_map50` mới với mốc ở bước 1. Ghi lại quyết định giữ/bỏ vào `notes.md`.
-5. Lặp lại bước 2.
+1. Read current best `test_map50` from `automation/leaderboards/<dataset>.csv`.
+2. Create or modify a draft architecture in `research/experiments/<name>/draft_model.py` and document hypothesis in `notes.md`.
+3. Run evaluation via `python -m ai.automation.run` with a fixed epoch/time budget.
+4. Compare `test_map50` against the baseline and log decision in `notes.md`.
+5. Repeat from step 2.
 
-## Điều kiện kích hoạt
+## Activation Prerequisites
 
-- `core/trainer.py` đã chạy thành công ít nhất 1 lần qua `automation/run.py`.
-- `automation/leaderboards/<dataset>.csv` có ít nhất 1 dòng (baseline YOLOv8n).
-- Đã quyết định ngân sách thời gian/epoch cố định cho mỗi vòng thử (dựa trên tốc độ train
-  thật đo được ở baseline, không đoán trước).
+- `core/trainer.py` verified functional via `automation/run.py`.
+- At least one baseline run logged in `automation/leaderboards/<dataset>.csv`.
+- Defined epoch/time budget per iteration.

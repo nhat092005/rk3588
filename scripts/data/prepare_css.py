@@ -1,9 +1,4 @@
-"""data/css/raw/ -> data/css/processed/
-
-raw/css-data/{train,valid,test}/ is the split already fixed by Roboflow
-when the dataset was exported. This script only reorganizes files into
-that split, it never re-shuffles them.
-"""
+"""Prepare CSS dataset: maps Roboflow train/valid/test export into processed directory."""
 import sys
 from pathlib import Path
 

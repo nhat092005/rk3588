@@ -1,13 +1,7 @@
-"""Manual mAP/precision/recall computation for predictions that did not go
-through ultralytics' val() API (e.g. RKNN inference in core/export.py, or a
-research/ architecture with a custom forward pass).
+"""Evaluation metrics computation for object detection.
 
-Reuses ultralytics.utils.metrics.box_iou / ap_per_class so the numbers stay
-directly comparable to the mAP50 / mAP50-95 columns already in the
-leaderboards (produced by core/trainer.py's evaluate(), which calls
-ultralytics' own val()). match_predictions() below is adapted from
-ultralytics.engine.validator.BaseValidator.match_predictions (same matching
-rule, just usable without instantiating a full Validator).
+Computes mAP@0.5, mAP@0.5:0.95, precision, recall, and per-class AP
+using Ultralytics metric definitions.
 """
 from dataclasses import dataclass
 
@@ -15,7 +9,7 @@ import numpy as np
 import torch
 from ultralytics.utils.metrics import ap_per_class, box_iou
 
-# 10 IoU thresholds 0.50:0.05:0.95, matching ultralytics' default mAP50-95 range.
+# 10 IoU thresholds from 0.50 to 0.95 with step 0.05
 IOU_THRESHOLDS = torch.linspace(0.5, 0.95, 10)
 
 
@@ -61,10 +55,14 @@ def compute_map(
     predictions: list[Detection],
     targets: list[GroundTruth],
 ) -> dict:
-    """predictions[i] / targets[i] must be the same image, same order.
+    """Compute mAP, precision, and recall from aligned prediction and target lists.
 
-    Returns map50, map50_95, mean precision/recall (at max-F1 threshold), and
-    per-class AP50 — same definitions ultralytics uses in DetMetrics.
+    Args:
+        predictions: List of Detection objects per image.
+        targets: List of GroundTruth objects per image.
+
+    Returns:
+        Dictionary containing map50, map50_95, precision, recall, and per_class_ap50.
     """
     tp_list, conf_list, pred_cls_list, target_cls_list = [], [], [], []
 

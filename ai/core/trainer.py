@@ -1,9 +1,4 @@
-"""Single source of truth for training/eval.
-
-research/ and automation/ must both call into this module instead of writing
-their own training loop, so a result from quick research testing and a result
-from a formal automation run are always produced the same way.
-"""
+"""Central model training and evaluation interface using Ultralytics YOLO."""
 from dataclasses import dataclass
 
 from ultralytics import YOLO
@@ -13,14 +8,14 @@ from .dataset import dataset_yaml_path
 
 @dataclass
 class TrainConfig:
-    model: str                  # ultralytics checkpoint name (e.g. "yolov8n.pt") or path to an architecture .yaml
-    dataset: str                 # dataset name, e.g. "css"
+    model: str  # Model checkpoint name (e.g. "yolov8n.pt") or architecture YAML path
+    dataset: str  # Dataset identifier, e.g. "sfchd"
     epochs: int
     imgsz: int = 640
     batch: int = 16
     seed: int = 42
-    device: str = "0"            # "0" = first GPU, "cpu" = CPU
-    project: str | None = None   # directory ultralytics writes its raw run output into
+    device: str = "0"  # Target device, e.g. "0" for GPU, "cpu" for CPU
+    project: str | None = None  # Output directory for run artifacts
     run_name: str = "train"
 
 

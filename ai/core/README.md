@@ -1,18 +1,11 @@
 # core/
 
-Engine dùng chung — nguồn sự thật duy nhất cho cách train/đánh giá model.
-`research/` và `automation/` đều import từ đây, không được tự viết training loop riêng
-(tránh trường hợp kết quả nghiên cứu và kết quả benchmark chính thức không đối chiếu được với nhau).
+Shared engine for model training, evaluation, and deployment.
 
-- `dataset.py` — đọc `data/<name>/processed/dataset.yaml`.
-- `trainer.py` — train/eval loop, hiện bọc quanh thư viện `ultralytics`.
-- `metrics.py` — mAP/precision/recall computed by hand (reuses `ultralytics.utils.metrics`),
-  for predictions that don't go through `ultralytics`' own `val()` — e.g. RKNN inference in
-  `rknn/`, or a `research/` architecture with a custom forward pass.
-- `rknn/` — RKNN export/benchmark engine, split by responsibility (see each module's own
-  docstring and `tmp/2026-09-17_baseline_rk3588_npu_optimization.md` section 9):
-  - `calibration.py` — calibration image sampling, no `rknn-toolkit2` dependency.
-  - `baseline.py` — Tier 1, native `ultralytics` RKNN export. Written but not runnable yet
-    (needs `rknn-toolkit2` in `.venv`).
-  - `deploy.py` — Tier 2, manual `rknn.api.RKNN` for core_mask/op_target/hybrid
-    quantization — the thesis' actual optimization layer. Not implemented yet.
+- `dataset.py`: Dataset loader interface for `data/<name>/processed/dataset.yaml`.
+- `trainer.py`: Model training and validation engine.
+- `metrics.py`: Standalone mAP, precision, and recall evaluation for non-Ultralytics inferences.
+- `rknn/`: RKNN conversion and deployment tools:
+  - `calibration.py`: Calibration image dataset sampling.
+  - `baseline.py`: Standard Ultralytics RKNN export pipeline.
+  - `deploy.py`: RKNN API builder with multi-core (`core_mask`), operator targeting, and hybrid quantization.

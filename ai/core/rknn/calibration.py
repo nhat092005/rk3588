@@ -1,9 +1,4 @@
-"""Calibration image selection for RKNN INT8 quantization.
-
-No dependency on rknn-toolkit2 - pure stdlib, so this is testable and stable
-regardless of whether the RKNN environment is set up yet. Used by both
-rknn/baseline.py (Tier 1) and rknn/deploy.py (Tier 2).
-"""
+"""Calibration image selection utilities for RKNN INT8 quantization."""
 from __future__ import annotations
 
 import random
@@ -17,26 +12,19 @@ def sample_calibration_images(
     min_per_class: int = 10,
     seed: int = 42,
 ) -> list[str]:
-    """Pick calibration images, guaranteeing coverage of rare classes.
+    """Select representative calibration images with guaranteed coverage of minority classes.
 
-    Plain random sampling risks under-representing rare classes in an
-    imbalanced dataset. Example: sfchd's "self_clothes" appears in only
-    5.91% of train images - with n=100 pure random, there is a ~16% chance
-    of ending up with <=3 images containing it (Poisson, lambda=5.91). See
-    tmp/2026-09-17_baseline_rk3588_npu_optimization.md section 9.3 for the
-    full calculation. Rarest classes are filled first here, guaranteeing at
-    least min_per_class images each, before the remaining slots are filled
-    randomly.
+    Prioritizes minority classes to ensure at least min_per_class images per class
+    before filling the remainder uniformly.
 
     Args:
-        labels_dir: directory of YOLO .txt label files, e.g.
-            data/<name>/processed/labels/train/.
-        n: total number of images to return.
-        min_per_class: minimum images guaranteed per class, rarest first.
-        seed: for reproducibility.
+        labels_dir: Path to directory containing YOLO .txt label files.
+        n: Total number of calibration image stems to return.
+        min_per_class: Minimum guaranteed images per class.
+        seed: Random seed for deterministic selection.
 
     Returns:
-        Image stems (filename without extension), length <= n.
+        List of image stems (without extension), with length <= n.
     """
     rng = random.Random(seed)
     class_to_images: dict[int, set[str]] = defaultdict(set)
@@ -62,8 +50,7 @@ def sample_calibration_images(
 
 
 def write_calib_list(image_stems: list[str], images_dir: Path, out_path: Path) -> Path:
-    """Write the calibration image list RKNN-Toolkit2's build(dataset=...) arg
-    expects: one absolute image path per line."""
+    """Write absolute image paths to a newline-delimited dataset list for RKNN build."""
     paths = [str(images_dir / f"{stem}.jpg") for stem in image_stems]
     out_path.write_text("\n".join(paths) + "\n")
     return out_path

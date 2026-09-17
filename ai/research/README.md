@@ -1,13 +1,12 @@
 # research/
 
-Vùng thử nghiệm kiến trúc mới. Ít ràng buộc hơn `automation/`, nhưng vẫn phải chạy qua
-`core/trainer.py` — không tự viết training loop riêng.
+Experimental architecture workspace.
 
-- `notebooks/` — notebook thử ý tưởng, phân tích ablation.
-- `experiments/<ten_thu_nghiem>/`
-  - `notes.md` — ghi rõ ý tưởng lấy từ `docs/outputs/<topic>/_synthesis.md` nào, giả thuyết, kết quả sơ bộ.
-  - `draft_model.py` — bản nháp kiến trúc, trước khi thành `models/<ten_kien_truc_moi>.py` chính thức.
+## Structure
 
-Khi 1 kiến trúc trong `experiments/` chạy ổn định và có số liệu tốt hơn baseline trong
-`automation/leaderboards/`, "tốt nghiệp" nó bằng cách chuyển sang `models/`, rồi thêm 1
-config trong `automation/configs/` để benchmark chính thức.
+- `notebooks/`: Exploratory analysis and ablations.
+- `experiments/<name>/`:
+  - `notes.md`: Hypothesis, rationale, and preliminary metrics.
+  - `draft_model.py`: Draft model architecture.
+
+All training must use `core/trainer.py`. Models that outperform baseline benchmarks graduate to `models/` with an official config in `automation/configs/`.
