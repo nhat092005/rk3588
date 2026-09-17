@@ -1,0 +1,2 @@
+https://gitlab.com/rock-chips/rk3588/rk3588-doc
+https://github.com/airockchip/rknn-toolkit2
