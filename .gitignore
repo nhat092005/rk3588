@@ -1,0 +1,11 @@
+docs/_notes/
+docs/outputs/
+data/**
+!data/*/
+!data/*/DATA_CARD.md
+
+.venv/
+__pycache__/
+*.pyc
+ai/automation/runs/*/weights/
+tmp/
