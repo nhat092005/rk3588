@@ -1,0 +1,12 @@
+{
+  "run_id": "2026-09-17_sfchd_yolov8n_baseline_100ep",
+  "export_tier": "baseline_native_api",
+  "rknn_model_dir": "/home/nhat/workspace/prjs/rk3588/ai/automation/runs/2026-09-17_sfchd_yolov8n_baseline_100ep/weights/best_rknn_model",
+  "exported_at": "2026-09-18T01:16:55.892173",
+  "git_commit": "3a1c337205a2c15c1a05dc5e9aee87af407b1ea3",
+  "map50_95_fp32": null,
+  "map50_95_int8": null,
+  "latency_ms": null,
+  "fps": null,
+  "status": "exported, awaiting board bring-up for mAP/latency numbers"
+}
