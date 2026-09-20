@@ -1,7 +1,7 @@
 """Parse a rknn-toolkit2 build log (RKNN_LOG_LEVEL=3) and rank layers by
 DDR/NPU cycle count to find memory-bandwidth-bound bottlenecks.
 
-Usage: python scripts/analyze_rknn_build_log.py <log_path>
+Usage: python scripts/npu/analyze_rknn_build_log.py <log_path>
 """
 import argparse
 import re
