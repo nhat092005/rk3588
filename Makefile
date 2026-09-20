@@ -1,4 +1,4 @@
-.PHONY: help sync check train export-npu benchmark-npu leaderboard tail prepare-data clean
+.PHONY: help sync check train export-npu benchmark-npu leaderboard tail prepare-data archive restore clean
 
 help:
 	@echo "make sync                              - uv sync (install/update .venv)"
@@ -9,6 +9,8 @@ help:
 	@echo "make leaderboard DATASET=<name>        - print a dataset's leaderboard, e.g. DATASET=sfchd"
 	@echo "make tail RUN=<run_id>                 - tail -f a training run's results.csv"
 	@echo "make prepare-data DATASET=<name>       - regenerate data/<name>/processed/ from raw/, e.g. DATASET=sfchd"
+	@echo "make archive [DATASET=<name>] [OUT=<path>] - archive untracked weights and datasets to zip"
+	@echo "make restore [ARCHIVE=<path>]               - restore weights and datasets from zip"
 	@echo "make clean                             - remove __pycache__ directories"
 
 sync:
@@ -34,6 +36,12 @@ tail:
 
 prepare-data:
 	.venv/bin/python scripts/data/prepare_$(DATASET).py
+
+archive:
+	DATASET=$(DATASET) bash scripts/archive/archive.sh $(OUT)
+
+restore:
+	bash scripts/archive/restore.sh $(ARCHIVE)
 
 clean:
 	find . -type d -name __pycache__ -not -path "./3rdparty/*" -exec rm -rf {} +
