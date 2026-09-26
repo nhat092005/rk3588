@@ -30,7 +30,7 @@ def write_split(split: str, stems: list[str]) -> None:
         image_src = find_image(stem)
         label_src = RAW / "labels" / f"{stem}.txt"
         symlink_pair(image_src, label_src, PROCESSED / "images" / split, PROCESSED / "labels" / split)
-    print(f"{split}: {len(stems)} anh")
+    print(f"{split}: {len(stems)} images")
 
 
 def main() -> None:
