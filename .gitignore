@@ -10,7 +10,7 @@ __pycache__/
 *.pyc
 ai/automation/runs/*/weights/
 ai/automation/runs/*/logs/
-ai/automation/runs/_codecheck/logs/
+ai/automation/runs/_codecheck/
 ai/automation/golden/logs/
 tmp/
 
