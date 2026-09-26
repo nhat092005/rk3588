@@ -1,17 +1,19 @@
-# Board used for tier-2 measurements (Guide section 5.3)
-BOARD ?= minhnhat@100.67.251.37
-BOARD_REPO ?= rk3588
+# Board & hardware
+BOARD        ?= minhnhat@100.67.251.37
+BOARD_REPO   ?= rk3588
 BOARD_IMAGES ?= data/sfchd_5class/processed/images/test
-DEVICE ?= 100.67.251.37:5555
-CORE_MASK ?= AUTO
-RUN_DIR = ai/automation/runs/$(RUN)
-comma := ,
-BOARD_PY = cd $(BOARD_REPO) && .venv-board/bin/python -m
-# Every result-producing target runs through scripts/logtee.py: live output + cleaned log in runs/<id>/logs/
-LOGTEE = .venv/bin/python scripts/logtee.py
-# PC code state, passed to board scripts (the board has no git checkout of the current code)
+DEVICE       ?= 100.67.251.37:5555
+CORE_MASK    ?= AUTO
+
+# Paths & logtee
+comma   := ,
+RUN_DIR  = ai/automation/runs/$(RUN)
+LOGTEE   = .venv/bin/python scripts/logtee.py
+
+# Board exec & PC git provenance
+BOARD_PY   = cd $(BOARD_REPO) && .venv-board/bin/python -m
 GIT_COMMIT = $(shell git rev-parse HEAD)
-GIT_DIRTY = $(if $(shell git status --porcelain ai/ scripts/),true,false)
+GIT_DIRTY  = $(if $(shell git status --porcelain ai/ scripts/),true,false)
 BOARD_PROV = --run-id $(RUN) --git-commit $(GIT_COMMIT) --git-dirty $(GIT_DIRTY)
 
 # Environment and setup
