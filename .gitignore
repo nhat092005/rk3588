@@ -9,6 +9,9 @@ data/**
 __pycache__/
 *.pyc
 ai/automation/runs/*/weights/
+ai/automation/runs/*/logs/
+ai/automation/runs/_codecheck/logs/
+ai/automation/golden/logs/
 tmp/
 
 CLAUDE.md
