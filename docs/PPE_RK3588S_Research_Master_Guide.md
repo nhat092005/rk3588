@@ -1185,8 +1185,8 @@ Không chạy lệnh `adb` nào khác (kể cả `make board-check`) khi lệnh 
 - [x] Tiền xử lý trên board trùng từng pixel với evaluator (md5 4 ảnh); ảnh calibration trùng input evaluator (sai khác 0)
 - [x] Accuracy `.rknn` đo trên board: FP16 cho mAP50-95 0.3677, sát FP32 0.3669 (model nháp), md5 input trùng ở cả 1,238 ảnh
 - [x] Chạy thử qua `make` với model nháp (kết quả nháp đã xoá): train 1 epoch (có log, chạy lại bị chặn), export FP16/INT8, evaluate PyTorch/ONNX/RKNN INT8, tầng 1 INT8, tầng 2 FP16/INT8, `bench-gpu`, `make tables` (117 ô, sinh đúng)
-- [x] Tầng 1 FP16 chạy được bằng script tay (2 lần `eval_perf`: 29.8, 29.9 ms)
-- [ ] Chạy thử qua `make` còn thiếu (board offline giữa chừng ngày 2026-09-26): `evaluate BACKEND=rknn PREC=fp16` sau khi sửa lỗi hết RAM, `bench-board-cpu`, `bench-board-throughput`, `benchmark-npu PREC=fp16`, và 1 lần `make phase3` để kiểm bỏ qua bước đã xong
+- [x] Chạy thử qua `make` phần còn lại (2026-09-27): `evaluate BACKEND=rknn PREC=fp16` (mAP50-95 0.3677, trùng lần trước), `bench-board-cpu`, `bench-board-throughput` (1 và 3 context), `benchmark-npu PREC=fp16` (median 29.89 ms, 5 lần 28.0–30.0 ms; bộ nhớ NPU 23.86 MiB), `make phase3` (lần 1 làm đúng các bước thiếu, lần 2 bỏ qua hết)
+- [x] `make tables` báo lỗi đúng khi file tầng 2 đo lúc chưa khoá tần số
 
 **Tiêu chí xong:** 2 lệnh trên pass trên commit sẽ dùng để sinh số liệu.
 
@@ -1606,7 +1606,7 @@ Tức là Đồ án 2 trở thành:
 
 # 13. Việc nên làm ngay từ trạng thái hiện tại
 
-Trạng thái ngày 2026-09-26: Phase 0 xong; Phase 1 còn các bước kiểm cần board (checklist Phase 1, mục 8). Việc tiếp theo: `make phase2` cho cả 2 dataset (không cần board, khoảng 17 giờ GPU), song song với các bước kiểm còn lại khi board online.
+Trạng thái ngày 2026-09-27: Phase 0 và Phase 1 xong (mục 8); mọi lệnh `make` của Phase 2–4 đã chạy thử trọn với model nháp. Việc tiếp theo: `make phase2 DATASET=sfchd_5class` và `make phase2 DATASET=sfchd_shel5k` (không cần board, khoảng 17 giờ GPU).
 
 ---
 
