@@ -1147,7 +1147,7 @@ results/<ds>/                           # do make tables sinh, không sửa tay
 
 | Thông báo | Nguyên nhân | Cách sửa |
 |---|---|---|
-| `adb cannot reach the board` hoặc `rknn_server is not running` | Board vừa khởi động lại | [board, sudo] `sudo bash ai/board/start_rknn_server.sh`, rồi chạy lại phase |
+| `adb cannot reach the board` hoặc `rknn_server is not running` | Board vừa khởi động lại, hoặc `adbd` tự thoát (gặp ngày 2026-09-27: board chạy liên tục nhưng `adbd` mất, log trống, chưa rõ nguyên nhân) | [board, sudo] `sudo bash ai/board/start_rknn_server.sh`, rồi chạy lại phase |
 | `frequencies not locked` | Chưa khoá tần số trước Phase 4 | [board, sudo] `sudo bash ai/board/lock_freq.sh lock` |
 | `... already exists; move it away` | Run bị ngắt giữa lúc train (có `weights/` nhưng chưa có `eval/`) | Xoá thư mục run đó, chạy lại `make phase2` |
 | `STOPPED at step i` | Lệnh make của bước i lỗi | Đọc log mới nhất trong `runs/<run_id>/logs/`, sửa, chạy lại phase |
