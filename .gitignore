@@ -9,3 +9,6 @@ __pycache__/
 *.pyc
 ai/automation/runs/*/weights/
 tmp/
+
+CLAUDE.md
+.venv-board/
