@@ -32,6 +32,9 @@ make export-npu RUN=2026-09-17_sfchd_yolov8n_baseline_100ep
 | `make export-npu` | `RUN=<run_id>` | Export model checkpoint to RKNN format |
 | `make benchmark-npu` | `RUN=<run_id> DEVICE=<ip:port> [CORE_MASK=AUTO]` | Profile real latency and mAP on physical board |
 | `make leaderboard` | `DATASET=sfchd` | Print evaluation leaderboard for dataset |
+| `make demo-video` | `RUN=<run_id> SRC=<video> [BACKEND=pt\|onnx\|rknn] [PREC=fp16\|int8]` | Detect once, render `predict.mp4`, `track.mp4` and their comparison under `data/demo/outputs/videos/` |
+| `make demo-images` | `RUN=<run_id> [SRC=data/demo/images] [BACKEND=pt\|onnx\|rknn] [PREC=fp16\|int8]` | Detect once, render annotated images under `data/demo/outputs/images/` |
+| `make demo-compare` | `A=<path> B=<path> [OUT=<path>]` | Side-by-side comparison of two rendered videos or image directories |
 | `make clean` | | Remove temporary Python cache directories |
 
 Locations:

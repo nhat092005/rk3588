@@ -16,6 +16,11 @@ GIT_COMMIT = $(shell git rev-parse HEAD)
 GIT_DIRTY  = $(if $(shell git status --porcelain ai/ scripts/),true,false)
 BOARD_PROV = --run-id $(RUN) --git-commit $(GIT_COMMIT) --git-dirty $(GIT_DIRTY)
 
+# Demo
+DEMO_BACKEND    = $(or $(BACKEND),pt)
+DEMO_TAG        = $(if $(filter rknn,$(DEMO_BACKEND)),rknn_$(PREC),$(DEMO_BACKEND)_fp32)
+DEMO_BOARD_ARGS = $(if $(filter rknn,$(DEMO_BACKEND)),--board $(BOARD) --board-repo $(BOARD_REPO))
+
 # Environment and setup
 .PHONY: help sync check
 help:
@@ -57,6 +62,15 @@ help:
 	@echo "                                          - tier 2 on the board CPU with ONNX Runtime (FP32)"
 	@echo "  make bench-board-throughput RUN=<id> PREC=<p> CORE_MASKS=CORE_0,CORE_1,CORE_2"
 	@echo "                                          - multi-context throughput"
+	@echo ""
+	@echo "Demo (videos and images, outputs under data/demo/outputs/):"
+	@echo "  make demo-video RUN=<id> SRC=<video> [BACKEND=pt|onnx|rknn] [PREC=fp16|int8]"
+	@echo "                                          - detect once -> predict.mp4 -> track.mp4 -> compare"
+	@echo "  make demo-images RUN=<id> [SRC=data/demo/images] [BACKEND=pt|onnx|rknn] [PREC=fp16|int8]"
+	@echo "                                          - detect once -> predict/<name>.jpg per image"
+	@echo "  make demo-compare A=<path> B=<path> [OUT=<path>]"
+	@echo "                                          - side by side; video/compare.py if A ends .mp4, else image/compare.py"
+	@echo "                                          - BACKEND=rknn needs make board-sync first (copies ai/board/detect_video.py, detect_images.py)"
 	@echo ""
 	@echo "Data & Utilities:"
 	@echo "  make leaderboard DATASET=<name>        - print a dataset's leaderboard, e.g. DATASET=sfchd_5class"
@@ -148,6 +162,25 @@ bench-board-throughput:
 	rsync -a --relative $(RUN_DIR)/weights/./rknn_$(PREC)/*.rknn $(RUN_DIR)/weights/./rknn_$(PREC)/metadata.yaml $(BOARD):$(BOARD_REPO)/$(RUN_DIR)/weights/
 	$(LOGTEE) $(RUN_DIR)/logs/throughput_$(PREC)_$(subst $(comma),-,$(CORE_MASKS)) -- ssh $(BOARD) '$(BOARD_PY) ai.board.bench_throughput --model $(RUN_DIR)/weights/rknn_$(PREC) --images $(BOARD_IMAGES) --core-masks $(CORE_MASKS) --out $(RUN_DIR)/bench/throughput_$(PREC)_$(subst $(comma),-,$(CORE_MASKS)).json $(BOARD_PROV)'
 	mkdir -p $(RUN_DIR)/bench && scp $(BOARD):$(BOARD_REPO)/$(RUN_DIR)/bench/throughput_$(PREC)_$(subst $(comma),-,$(CORE_MASKS)).json $(RUN_DIR)/bench/
+
+# Demo video/image toolkit
+.PHONY: demo-video demo-images demo-compare
+demo-video:
+	$(eval VIDEO_OUT := data/demo/outputs/videos/$(basename $(notdir $(SRC)))/$(RUN)/$(DEMO_TAG))
+	$(LOGTEE) $(RUN_DIR)/logs/demo_detect_$(basename $(notdir $(SRC)))_$(DEMO_TAG) -- .venv/bin/python scripts/demo/video/detect.py --run $(RUN) --source $(SRC) --backend $(DEMO_BACKEND) $(if $(PREC),--precision $(PREC)) $(DEMO_BOARD_ARGS)
+	$(LOGTEE) $(RUN_DIR)/logs/demo_predict_$(basename $(notdir $(SRC)))_$(DEMO_TAG) -- .venv/bin/python scripts/demo/video/predict.py --detections $(VIDEO_OUT)/detections.npz
+	$(LOGTEE) $(RUN_DIR)/logs/demo_track_$(basename $(notdir $(SRC)))_$(DEMO_TAG) -- .venv/bin/python scripts/demo/video/track.py --detections $(VIDEO_OUT)/detections.npz
+	$(LOGTEE) $(RUN_DIR)/logs/demo_compare_$(basename $(notdir $(SRC)))_$(DEMO_TAG) -- .venv/bin/python scripts/demo/video/compare.py $(VIDEO_OUT)/predict.mp4 $(VIDEO_OUT)/track.mp4
+
+demo-images:
+	$(eval IMAGES_OUT := data/demo/outputs/images/$(RUN)/$(DEMO_TAG))
+	$(LOGTEE) $(RUN_DIR)/logs/demo_detect_images_$(DEMO_TAG) -- .venv/bin/python scripts/demo/image/detect.py --run $(RUN) $(if $(SRC),--source $(SRC)) --backend $(DEMO_BACKEND) $(if $(PREC),--precision $(PREC)) $(DEMO_BOARD_ARGS)
+	$(LOGTEE) $(RUN_DIR)/logs/demo_predict_images_$(DEMO_TAG) -- .venv/bin/python scripts/demo/image/predict.py --detections $(IMAGES_OUT)/detections.npz
+
+demo-compare:
+	$(eval DEMO_KIND := $(if $(filter %.mp4,$(A)),video,image))
+	$(eval DEMO_OUTFLAG := $(if $(filter video,$(DEMO_KIND)),--out,--out-dir))
+	$(LOGTEE) data/demo/outputs/logs/demo_compare -- .venv/bin/python scripts/demo/$(DEMO_KIND)/compare.py $(A) $(B) $(if $(OUT),$(DEMO_OUTFLAG) $(OUT))
 
 # Data and utilities
 .PHONY: leaderboard tail prepare-data archive restore clean

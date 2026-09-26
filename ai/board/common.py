@@ -94,7 +94,7 @@ def nms_xyxy(boxes: np.ndarray, scores: np.ndarray, iou_thres: float) -> np.ndar
     return np.array(keep, dtype=int)
 
 
-def postprocess(pred: np.ndarray, meta: tuple, normalized: bool) -> np.ndarray:
+def postprocess(pred: np.ndarray, meta: tuple, normalized: bool, conf_thres: float = CONF) -> np.ndarray:
     """Raw (1, 4 + nc, anchors) -> (N, 6) [x1, y1, x2, y2, conf, cls] in original image pixels."""
     x = pred[0].T.astype(np.float32)  # (anchors, 4 + nc)
     if normalized:  # Ultralytics INT8 RKNN exports divide boxes by the input size
@@ -102,7 +102,7 @@ def postprocess(pred: np.ndarray, meta: tuple, normalized: bool) -> np.ndarray:
     scores = x[:, 4:]
     cls = scores.argmax(1)
     conf = scores[np.arange(len(cls)), cls]
-    keep = conf > CONF
+    keep = conf > conf_thres
     x, conf, cls = x[keep], conf[keep], cls[keep]
     if len(x) > MAX_NMS:
         top = conf.argsort()[::-1][:MAX_NMS]
