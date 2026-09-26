@@ -3,9 +3,16 @@ docs/outputs/
 data/**
 !data/*/
 !data/*/DATA_CARD.md
+!data/CLASS_MAPPING.md
 
 .venv/
 __pycache__/
 *.pyc
 ai/automation/runs/*/weights/
+ai/automation/runs/*/logs/
+ai/automation/runs/_codecheck/
+ai/automation/golden/logs/
 tmp/
+
+CLAUDE.md
+.venv-board/

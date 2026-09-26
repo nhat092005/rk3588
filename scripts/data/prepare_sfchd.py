@@ -32,7 +32,7 @@ def main() -> None:
             image_src = RAW / "images" / f"{stem}.jpg"
             label_src = RAW / "labels" / f"{stem}.txt"
             symlink_pair(image_src, label_src, PROCESSED / "images" / split, PROCESSED / "labels" / split)
-        print(f"{split}: {len(split_list)} anh")
+        print(f"{split}: {len(split_list)} images")
 
     write_classes(classes, PROCESSED / "classes.txt")
     write_dataset_yaml(

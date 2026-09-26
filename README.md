@@ -1,40 +1,59 @@
 # RK3588 PPE Detection Pipeline
 
-End-to-end PPE (Personal Protective Equipment) detection research and training pipeline targeting Rockchip RK3588 NPU (6 TOPS). Covers dataset preparation, YOLO training, INT8 quantization via RKNN-Toolkit2, and on-board multi-core latency benchmarking.
+End-to-end YOLO training/deployment research pipeline for PPE (Personal
+Protective Equipment) detection, targeting the Rockchip RK3588 NPU (6 TOPS).
+Covers dataset preparation, YOLOv8/YOLOv11 training, INT8/FP16 quantization
+via RKNN-Toolkit2, and real multi-core latency benchmarking on the board.
+
+Current scope: 5 classes (`person`, `helmet`, `head`, `safety_clothes`,
+`self_clothes`), primary datasets `sfchd_5class` / `sfchd_shel5k`. Class
+mapping details: `data/CLASS_MAPPING.md`.
 
 ## Quickstart
 
 Prerequisites:
-- Linux x86_64
-- [uv](https://docs.astral.sh/uv/) package manager
+- Linux x86_64, CUDA GPU for training
+- [uv](https://docs.astral.sh/uv/) for virtualenv management
+- SSH access to the board (`BOARD` variable, see `Makefile`) for the
+  on-board benchmark step
 
 ```bash
-# 1. Setup environment and verify bindings (Torch, CUDA, RKNN)
+# 1. Set up environment and verify bindings (Torch, CUDA, RKNN)
 make sync
 make check
 
-# 2. Train baseline model
-make train CONFIG=ai/automation/configs/sfchd_yolov8n_baseline.yaml
+# 2. Train baseline (seed 42) + crosscheck evaluator
+make phase2 DATASET=sfchd_5class
 
-# 3. Export trained checkpoint to RKNN INT8 format
-make export-npu RUN=2026-09-17_sfchd_yolov8n_baseline_100ep
+# 3. Export FP16/INT8, measure complexity, evaluate on ONNX/RKNN
+make phase3 DATASET=sfchd_5class
+
+# 4. Tier 1 (PC) + tier 2 (board) benchmark — needs protocol LOCK and a
+#    board that has already been set up
+make phase4 DATASET=sfchd_5class
+
+# 5. Aggregate result tables
+make tables DATASET=sfchd_5class
 ```
 
-## Commands & Config Reference
+`phase10` reruns seeds 43/44 for the final key models, once the phases above
+are stable.
 
-| Command | Arguments / Example | Description |
-| :--- | :--- | :--- |
-| `make sync` | | Install and sync virtual environment via `uv` |
-| `make check` | | Validate PyTorch, CUDA, numpy, and RKNN bindings |
-| `make prepare-data` | `DATASET=sfchd` | Process raw dataset under `data/<name>/raw/` |
-| `make train` | `CONFIG=ai/automation/configs/<file>.yaml` | Train model using specified configuration |
-| `make tail` | `RUN=<run_id>` | Stream training metrics (`results.csv`) |
-| `make export-npu` | `RUN=<run_id>` | Export model checkpoint to RKNN format |
-| `make benchmark-npu` | `RUN=<run_id> DEVICE=<ip:port> [CORE_MASK=AUTO]` | Profile real latency and mAP on physical board |
-| `make leaderboard` | `DATASET=sfchd` | Print evaluation leaderboard for dataset |
-| `make clean` | | Remove temporary Python cache directories |
+## Full command reference
 
-Locations:
+```bash
+make help
+```
+
+lists every target (evaluate, golden-test, board-setup/sync, bench-board*,
+demo-video/images, archive/restore, ...) with a description — this is the
+canonical reference; the README does not duplicate it to avoid drifting out
+of sync when the Makefile changes.
+
+## Key locations
+
 - Training configs: `ai/automation/configs/*.yaml`
-- Experiment outputs & weights: `ai/automation/runs/<run_id>/`
-- Research documentation & deep dives: `docs/`
+- Per-run results & weights: `ai/automation/runs/<run_id>/`
+- Full runbook (Phase 0-10, evaluation protocol, result tables A-M):
+  `docs/PPE_RK3588S_Research_Master_Guide.md`
+- Paper notes / synthesis: `docs/_notes/`, `docs/outputs/`
