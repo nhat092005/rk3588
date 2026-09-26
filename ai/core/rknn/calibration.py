@@ -1,6 +1,7 @@
 """Calibration image selection utilities for RKNN INT8 quantization."""
 from __future__ import annotations
 
+import math
 import random
 from collections import defaultdict
 from pathlib import Path
@@ -12,20 +13,7 @@ def sample_calibration_images(
     min_per_class: int = 10,
     seed: int = 42,
 ) -> list[str]:
-    """Select representative calibration images with guaranteed coverage of minority classes.
-
-    Prioritizes minority classes to ensure at least min_per_class images per class
-    before filling the remainder uniformly.
-
-    Args:
-        labels_dir: Path to directory containing YOLO .txt label files.
-        n: Total number of calibration image stems to return.
-        min_per_class: Minimum guaranteed images per class.
-        seed: Random seed for deterministic selection.
-
-    Returns:
-        List of image stems (without extension), with length <= n.
-    """
+    """Select calibration image stems, guaranteeing min_per_class per class before filling the rest uniformly."""
     rng = random.Random(seed)
     class_to_images: dict[int, set[str]] = defaultdict(set)
     all_images: list[str] = []
@@ -49,8 +37,24 @@ def sample_calibration_images(
     return list(selected)[:n]
 
 
-def write_calib_list(image_stems: list[str], images_dir: Path, out_path: Path) -> Path:
-    """Write absolute image paths to a newline-delimited dataset list for RKNN build."""
-    paths = [str(images_dir / f"{stem}.jpg") for stem in image_stems]
-    out_path.write_text("\n".join(paths) + "\n")
-    return out_path
+def write_letterboxed_calib(image_paths: list[Path], out_dir: Path, imgsz: int = 640) -> Path:
+    """Write calibration images already letterboxed to imgsz x imgsz as PNG.
+
+    RKNN-Toolkit2 resizes calibration images that differ from the input size in an
+    undocumented way, so they are preprocessed here exactly like the evaluator
+    (Ultralytics val LetterBox) and stored lossless. Returns the images directory.
+    """
+    import cv2
+    from ultralytics.data.augment import LetterBox
+
+    images_dir = out_dir / "images"
+    images_dir.mkdir(parents=True, exist_ok=True)
+    letterbox = LetterBox(new_shape=(imgsz, imgsz), scaleup=False)
+    for src in image_paths:
+        img = cv2.imread(str(src))
+        h0, w0 = img.shape[:2]
+        r = imgsz / max(h0, w0)
+        if r != 1:  # same long-side resize as BaseDataset.load_image(rect_mode=True)
+            img = cv2.resize(img, (min(math.ceil(w0 * r), imgsz), min(math.ceil(h0 * r), imgsz)), interpolation=cv2.INTER_LINEAR)
+        cv2.imwrite(str(images_dir / f"{src.stem}.png"), letterbox(image=img))
+    return images_dir

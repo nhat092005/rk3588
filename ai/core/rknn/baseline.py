@@ -2,47 +2,54 @@
 from __future__ import annotations
 
 import shutil
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
+import yaml
 from ultralytics import YOLO
-
-from ai.core.dataset import dataset_yaml_path
 
 
 @dataclass
 class ExportConfig:
     weights: str
-    dataset: str
     platform: str = "rk3588"
     imgsz: int = 640
-    quantize: int = 8  # 8 for INT8 quantization, 16 for FP16
-    calib_split: str = "train"
+    quantize: int = 8  # 8 for INT8 (w8a8), 16 for FP16
+    calib_images_dir: str | None = None  # letterboxed calibration images, required for INT8
 
 
-def export_baseline(cfg: ExportConfig) -> str:
-    """Export model weights to RKNN using Ultralytics native backend."""
+def export_onnx(weights: str, imgsz: int = 640) -> Path:
+    """Plain FP32 ONNX (pixel box coordinates), same opset as the RKNN export. Used on the board CPU."""
+    return Path(YOLO(weights).export(format="onnx", imgsz=imgsz, opset=19))
+
+
+def export_rknn(cfg: ExportConfig, out_dir: Path) -> Path:
+    """Export to RKNN and move Ultralytics' <weights>_rknn_model/ to out_dir.
+
+    Ultralytics writes every precision to the same <weights>_rknn_model/ folder and,
+    for INT8, overwrites then deletes <weights>.onnx (engine/exporter.py export_rknn),
+    so call export_onnx() after this function, not before.
+    """
     model = YOLO(cfg.weights)
-    data_yaml = dataset_yaml_path(cfg.dataset)
+    kwargs = {}
+    with tempfile.TemporaryDirectory() as tmp:
+        if cfg.quantize == 8:
+            if not cfg.calib_images_dir:
+                raise ValueError("INT8 export needs calib_images_dir")
+            # Ultralytics needs calib images via a dataset split: build a throwaway dataset.yaml
+            # (train/val keys required but unused).
+            calib = str(Path(cfg.calib_images_dir).resolve())
+            data_yaml = Path(tmp) / "calib.yaml"
+            data_yaml.write_text(yaml.safe_dump(
+                {"path": tmp, "train": calib, "val": calib, "calib": calib, "names": model.names}
+            ))
+            kwargs = {"data": str(data_yaml), "split": "calib"}
+        result = Path(model.export(
+            format="rknn", name=cfg.platform, quantize=cfg.quantize, imgsz=cfg.imgsz, **kwargs
+        ))
 
-    stash = None
-    if cfg.quantize == 8:
-        # export_rknn() deletes this file when quantize=8; keep a copy and restore it after.
-        # opset=19 matches the clamp export_rknn() applies internally.
-        onnx_path = Path(model.export(format="onnx", imgsz=cfg.imgsz, opset=19))
-        stash = onnx_path.with_suffix(".onnx.stash")
-        shutil.copy2(onnx_path, stash)
-
-    result = model.export(
-        format="rknn",
-        name=cfg.platform,
-        quantize=cfg.quantize,
-        data=str(data_yaml),
-        split=cfg.calib_split,
-        imgsz=cfg.imgsz,
-    )
-
-    if stash is not None:
-        stash.rename(onnx_path)
-
-    return result
+    if out_dir.exists():
+        shutil.rmtree(out_dir)
+    shutil.move(str(result), str(out_dir))
+    return out_dir
