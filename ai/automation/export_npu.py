@@ -77,6 +77,8 @@ def main() -> None:
         **provenance(),
         "ultralytics_version": version("ultralytics"),
         "rknn_toolkit2_version": version("rknn-toolkit2"),
+        "onnx_version": version("onnx"),
+        "onnxslim_version": version("onnxslim"),
         "calibration": calib,
     }
     out_path = run_dir / f"export_{precision}.json"

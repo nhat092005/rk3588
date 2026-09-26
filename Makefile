@@ -9,6 +9,8 @@ CORE_MASK    ?= AUTO
 comma   := ,
 RUN_DIR  = ai/automation/runs/$(RUN)
 LOGTEE   = .venv/bin/python scripts/logtee.py
+# Ultralytics must not pip-install into .venv (it silently changed onnx/onnxslim before); only make sync changes it
+export YOLO_AUTOINSTALL = False
 
 # Board exec & PC git provenance
 BOARD_PY   = cd $(BOARD_REPO) && .venv-board/bin/python -m
