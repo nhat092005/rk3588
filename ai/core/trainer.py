@@ -15,6 +15,10 @@ class TrainConfig:
     batch: int = 16
     seed: int = 42
     device: str = "0"  # Target device, e.g. "0" for GPU, "cpu" for CPU
+    optimizer: str = "auto"  # Set explicitly in configs so the choice does not depend on Ultralytics' auto logic
+    lr0: float = 0.01
+    momentum: float = 0.937
+    warmup_bias_lr: float = 0.1  # optimizer=auto silently sets this to 0.0, so configs pin it too
     project: str | None = None  # Output directory for run artifacts
     run_name: str = "train"
 
@@ -29,6 +33,10 @@ def train(cfg: TrainConfig) -> YOLO:
         batch=cfg.batch,
         seed=cfg.seed,
         device=cfg.device,
+        optimizer=cfg.optimizer,
+        lr0=cfg.lr0,
+        momentum=cfg.momentum,
+        warmup_bias_lr=cfg.warmup_bias_lr,
         project=cfg.project,
         name=cfg.run_name,
         exist_ok=True,

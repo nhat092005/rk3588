@@ -1,0 +1,13 @@
+dataset: sfchd_5class
+model: yolov8n_baseline
+epochs: 100
+imgsz: 640
+batch: 16
+seed: 42  # baseline seeds 42, 43, 44 via: make train CONFIG=<this file> SEED=<seed>
+device: "0"
+# Pinned to what optimizer=auto picks for this dataset size in Ultralytics 8.4.154
+# (engine/trainer.py build_optimizer: MuSGD, lr 0.01, momentum 0.9, warmup_bias_lr 0.0 when iterations > 10000)
+optimizer: MuSGD
+lr0: 0.01
+momentum: 0.9
+warmup_bias_lr: 0.0
