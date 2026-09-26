@@ -7,6 +7,7 @@ PPE detection model pipeline for RK3588.
 - `research/`: Experimental architectures and ablation studies.
 - `automation/`: Official training and evaluation pipeline with persistent logs.
 - `npu/`: RKNN deployment experiments (core_mask, op_target, quantization).
+- `board/`: Tier-2 scripts that run on the Orange Pi 5 itself (RKNNLite, ONNX Runtime CPU), with their own `requirements.txt`.
 - `program.md`: Autonomous architecture search protocol (inactive).
 
 The Python environment (`.venv`, `pyproject.toml`) resides at repository root.

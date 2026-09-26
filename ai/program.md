@@ -4,10 +4,10 @@
 
 ## Execution Loop
 
-1. Read current best `test_map50` from `automation/leaderboards/<dataset>.csv`.
+1. Read current best `map50` (eval set `sfchd_test`) from `automation/leaderboards/<dataset>.csv`.
 2. Create or modify a draft architecture in `research/experiments/<name>/draft_model.py` and document hypothesis in `notes.md`.
 3. Run evaluation via `python -m ai.automation.run` with a fixed epoch/time budget.
-4. Compare `test_map50` against the baseline and log decision in `notes.md`.
+4. Compare `map50` (eval set `sfchd_test`) against the baseline and log decision in `notes.md`.
 5. Repeat from step 2.
 
 ## Activation Prerequisites
