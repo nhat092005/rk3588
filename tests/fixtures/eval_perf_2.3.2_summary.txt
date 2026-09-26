@@ -1,0 +1,10 @@
+CPU Current Frequency List:
+    - 1800000
+    - 2256000
+    - 2304000
+NPU Current Frequency List:
+    - 1000000000
+DDR Current Frequency List:
+    - 2112000000
+Total Time(us): 17219
+FPS: 58.08

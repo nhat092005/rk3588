@@ -1,21 +1,16 @@
-"""RK3588 on-device benchmarking utilities for RKNN models.
+"""Tier-1 measurements of an RKNN model on the board, driven from the PC (Guide section 5.3).
 
-Provides board connection management, latency evaluation, and mAP measurement.
+Timing comes from board hardware via eval_perf(), unaffected by PC-board network delay.
+Needs adbd + rknn_server on the board (ai/board/start_rknn_server.sh).
+Output formats match RKNN-Toolkit2 2.3.2, tested in tests/test_parsers.py.
 """
 from __future__ import annotations
 
+import re
+import statistics
 from contextlib import contextmanager
-from pathlib import Path
 
-import cv2
-import numpy as np
-import torch
-import yaml
 from rknn.api import RKNN
-from ultralytics.utils.nms import non_max_suppression
-
-from ai.core.dataset import dataset_yaml_path
-from ai.core.metrics import Detection, GroundTruth, compute_map
 
 CORE_MASK = {
     "AUTO": RKNN.NPU_CORE_AUTO,
@@ -25,26 +20,28 @@ CORE_MASK = {
     "CORE_0_1": RKNN.NPU_CORE_0_1,
     "CORE_0_1_2": RKNN.NPU_CORE_0_1_2,
 }
+PERF_REPEATS = 5  # eval_perf calls per latency session; latency = median
+
+# perf_debug=False: "Total Time(us): 17219"
+SUMMARY_TIME_RE = re.compile(r"^Total Time\(us\):\s*([\d.]+)", re.M)
+# perf_debug=True: "Total Operator Elapsed Per Frame Time(us): 20663"
+LAYERS_TIME_RE = re.compile(r"^Total Operator Elapsed Per Frame Time\(us\):\s*([\d.]+)", re.M)
+# "CPU Current Frequency List:\n    - 1800000\n ..." (printed because fix_freq=True)
+FREQ_RE = re.compile(r"^(CPU|NPU|DDR) Current Frequency List:\n((?:\s+- \d+\n?)+)", re.M)
 
 
 @contextmanager
-def connect_board(
-    rknn_path: str,
-    device_id: str,
-    core_mask: str = "AUTO",
-    perf_debug: bool = True,
-):
-    """Context manager to load an RKNN model and initialize runtime on target board."""
+def connect_board(rknn_path: str, device_id: str, core_mask: str = "AUTO", **runtime_kwargs):
+    """Load an RKNN model and initialize the runtime on the board.
+
+    runtime_kwargs: perf_debug=True for the per-layer table, eval_mem=True for eval_memory().
+    Keep them in separate sessions: both change the measured time.
+    """
     rknn = RKNN(verbose=False)
     ret = rknn.load_rknn(rknn_path)
     if ret != 0:
         raise RuntimeError(f"load_rknn failed: {ret}")
-    ret = rknn.init_runtime(
-        target="rk3588",
-        device_id=device_id,
-        core_mask=CORE_MASK[core_mask],
-        perf_debug=perf_debug,
-    )
+    ret = rknn.init_runtime(target="rk3588", device_id=device_id, core_mask=CORE_MASK[core_mask], **runtime_kwargs)
     if ret != 0:
         raise RuntimeError(f"init_runtime failed: {ret}")
     try:
@@ -53,105 +50,66 @@ def connect_board(
         rknn.release()
 
 
-def measure_latency(rknn: RKNN, fix_freq: bool = True) -> dict:
-    """Measure inference latency, throughput, and op execution breakdown via eval_perf."""
-    import contextlib
-    import io
+def parse_frequencies(text: str) -> dict:
+    return {name: [int(v) for v in re.findall(r"\d+", body)] for name, body in FREQ_RE.findall(text)}
 
-    buf = io.StringIO()
-    with contextlib.redirect_stdout(buf):
-        rknn.eval_perf(is_print=True, fix_freq=fix_freq)
-    text = buf.getvalue()
 
-    total_us = None
-    for line in text.splitlines():
-        if "Total Operator Elapsed Per Frame Time(us):" in line:
-            total_us = float(line.split(":")[-1].strip())
-            break
-    if total_us is None:
-        raise RuntimeError(f"Could not parse latency from eval_perf() output:\n{text}")
+def parse_summary_time_us(text: str) -> float:
+    m = SUMMARY_TIME_RE.search(text)
+    if m is None:
+        raise ValueError("'Total Time(us):' not found in eval_perf output")
+    return float(m.group(1))
 
-    cpu_us = npu_us = None
-    fallback_ops = []
+
+def parse_layers(text: str) -> list[dict]:
+    """Rows of the 'Network Layer Information Table' (perf_debug=True)."""
+    rows = []
     for line in text.splitlines():
         parts = line.split()
-        if len(parts) >= 5 and parts[0] == "Total" and cpu_us is None:
-            # Parse aggregate execution times from the summary row
-            try:
-                cpu_us, npu_us = float(parts[1]), float(parts[3])
-            except ValueError:
-                pass
-    # Parse per-layer execution to identify operators falling back to CPU
-    for line in text.splitlines():
-        parts = line.split()
-        if len(parts) >= 4 and parts[0].isdigit() and parts[3] == "CPU" and parts[1] not in fallback_ops:
-            fallback_ops.append(parts[1])
+        if len(parts) < 6 or not parts[0].isdigit() or parts[3] not in ("CPU", "NPU", "GPU"):
+            continue
+        cycles = next((p for p in parts if re.fullmatch(r"\d+/\d+/\d+", p)), None)
+        time_idx = parts.index(cycles) + 1 if cycles else None
+        ddr, npu, total = (int(x) for x in cycles.split("/")) if cycles else (None, None, None)
+        rows.append({
+            "id": int(parts[0]), "op": parts[1], "dtype": parts[2], "target": parts[3],
+            "ddr_cycles": ddr, "npu_cycles": npu, "total_cycles": total,
+            "time_us": int(parts[time_idx]) if time_idx else None,
+            "name": parts[-1],
+        })
+    return rows
 
+
+def measure_latency(rknn: RKNN, repeats: int = PERF_REPEATS) -> dict:
+    """Session 1 (perf_debug=False): NPU time of one frame, `repeats` eval_perf calls."""
+    texts = [str(rknn.eval_perf(is_print=False, fix_freq=True)) for _ in range(repeats)]
+    values = [parse_summary_time_us(t) for t in texts]
+    median_us = statistics.median(values)
     return {
-        "latency_ms": total_us / 1000,
-        "fps": round(1000 / (total_us / 1000), 2),
-        "npu_time_us": npu_us,
-        "cpu_time_us": cpu_us,
-        "cpu_fallback_ops": fallback_ops,
+        "npu_latency_ms": round(median_us / 1000, 3),
+        "npu_latency_ms_all": [round(v / 1000, 3) for v in values],
+        "fps_latency": round(1e6 / median_us, 2),
+        "frequencies_during_eval_perf": parse_frequencies(texts[-1]),
+        "raw_last": texts[-1],
     }
 
 
-def measure_map_drop(rknn: RKNN, dataset: str, split: str = "test", imgsz: int = 640) -> dict:
-    """Run inference on dataset split and compute evaluation metrics."""
-    data_yaml = yaml.safe_load(dataset_yaml_path(dataset).read_text())
-    images_dir = Path(data_yaml["path"]) / data_yaml[split]
-    labels_dir = Path(str(images_dir).replace("/images/", "/labels/"))
-
-    predictions, targets = [], []
-    for img_path in sorted(images_dir.glob("*.jpg")):
-        img = cv2.imread(str(img_path))
-        img = cv2.resize(img, (imgsz, imgsz))
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-        raw = rknn.inference(inputs=[np.expand_dims(img, 0)])[0]
-        pred = torch.from_numpy(raw).float()
-        # Scale normalized box coordinates [0, 1] to pixel dimensions for NMS
-        pred[:, [0, 2]] *= imgsz
-        pred[:, [1, 3]] *= imgsz
-
-        nms_out = non_max_suppression(pred, conf_thres=0.001, iou_thres=0.65)[0]
-        predictions.append(
-            Detection(
-                boxes=nms_out[:, :4].numpy(),
-                scores=nms_out[:, 4].numpy(),
-                classes=nms_out[:, 5].numpy().astype(int),
-            )
-        )
-
-        label_path = labels_dir / f"{img_path.stem}.txt"
-        gt_boxes, gt_classes = [], []
-        if label_path.exists():
-            for line in label_path.read_text().splitlines():
-                if not line.strip():
-                    continue
-                cls, cx, cy, w, h = (float(v) for v in line.split())
-                gt_boxes.append(
-                    [
-                        (cx - w / 2) * imgsz,
-                        (cy - h / 2) * imgsz,
-                        (cx + w / 2) * imgsz,
-                        (cy + h / 2) * imgsz,
-                    ]
-                )
-                gt_classes.append(int(cls))
-        targets.append(
-            GroundTruth(
-                boxes=np.array(gt_boxes, dtype=np.float32).reshape(-1, 4),
-                classes=np.array(gt_classes, dtype=int),
-            )
-        )
-
-    result = compute_map(predictions, targets)
+def measure_layers(rknn: RKNN) -> tuple[dict, str]:
+    """Session 2 (perf_debug=True): per-layer table; its total is debug-mode time, not the latency."""
+    text = str(rknn.eval_perf(is_print=False, fix_freq=True))
+    rows = parse_layers(text)
+    m = LAYERS_TIME_RE.search(text)
     return {
-        "n_test_images": len(predictions),
-        "map50_int8": result["map50"],
-        "map50_95_int8": result["map50_95"],
-        "precision_int8": result["precision"],
-        "recall_int8": result["recall"],
-        "per_class_ap50_int8": result["per_class_ap50"],
-    }
+        "debug_total_us": float(m.group(1)) if m else None,
+        "n_layers": len(rows),
+        "cpu_ops": sorted({r["op"] for r in rows if r["target"] == "CPU"} - {"InputOperator", "OutputOperator"}),
+        "layers": rows,
+    }, text
+
+
+def measure_memory(rknn: RKNN) -> dict:
+    """Session 3 (eval_mem=True): eval_memory result in MiB (RKNN API ref 2.10, p.19)."""
+    mem = rknn.eval_memory(is_print=False)
+    if not isinstance(mem, dict):
+        raise RuntimeError(f"eval_memory returned {mem!r}; init_runtime needs eval_mem=True")
+    return {k: round(v / 2**20, 3) for k, v in mem.items()}
