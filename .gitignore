@@ -3,6 +3,7 @@ docs/outputs/
 data/**
 !data/*/
 !data/*/DATA_CARD.md
+!data/CLASS_MAPPING.md
 
 .venv/
 __pycache__/
