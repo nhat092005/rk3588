@@ -27,7 +27,7 @@ Trạng thái: `todo` / `wip` (dở, chưa commit) / `done` (đã commit) / `ski
 
 | Paper | Topic | Trạng thái | Ghi chú |
 |---|---|---|---|
-| edgesoc_benchmark_2026kong | 05_rk3588 | wip | Sci. Rep. 2026, 3 SoC Rockchip |
+| edgesoc_benchmark_2026kong | 05_rk3588 | done | Sci. Rep. 2026, 3 SoC Rockchip |
 | rknn_conversion_agent_2026su | 05_rk3588 | todo | arXiv 2609.27249 |
 | rk3566_npu_yolo11_2026limaran | 05_rk3588 | todo | TELKOMNIKA 2026 |
 | lnbyolo_rk3568_2025zhuo | 05_rk3588 | todo | PLOS ONE 2025 |
