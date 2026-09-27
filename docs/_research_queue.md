@@ -27,10 +27,10 @@ Trạng thái: `todo` / `wip` (dở, chưa commit) / `done` (đã commit) / `ski
 
 | Paper | Topic | Trạng thái | Ghi chú |
 |---|---|---|---|
-| edgesoc_benchmark_2026kong | 05_rk3588 | wip | Sci. Rep. 2026, 3 SoC Rockchip |
-| rknn_conversion_agent_2026su | 05_rk3588 | todo | arXiv 2609.27249 |
-| rk3566_npu_yolo11_2026limaran | 05_rk3588 | todo | TELKOMNIKA 2026 |
-| lnbyolo_rk3568_2025zhuo | 05_rk3588 | todo | PLOS ONE 2025 |
+| edgesoc_benchmark_2026kong | 05_rk3588 | done | Sci. Rep. 2026, 3 SoC Rockchip |
+| rknn_conversion_agent_2026su | 05_rk3588 | done | arXiv 2609.27249 |
+| rk3566_npu_yolo11_2026limaran | 05_rk3588 | done | TELKOMNIKA 2026 |
+| lnbyolo_rk3568_2025zhuo | 05_rk3588 | done | PLOS ONE 2025 |
 | yolov8_rtdetr_energy_2026suchy | 05_rk3588 | todo | Sci. Rep. 2026 |
 | yolov5_coral_tpu_2023prokscha | 05_rk3588 | todo | River Publishers OA chapter |
 | yolox_hailo8_2024achmadiah | 05_rk3588 | todo | arXiv 2602.10593 |
