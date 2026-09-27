@@ -50,7 +50,7 @@ Trạng thái: `todo` / `wip` (dở, chưa commit) / `done` (đã commit) / `ski
 | rtmdet_realtime_2022lyu | 08_npu_friendly_arch | todo | arXiv 2212.07784 |
 | mobilenetv4_2024qin | 08_npu_friendly_arch | todo | ECCV 2024 ecva |
 | qyolo_ptq_2023wang | 02_quantization | done | arXiv 2307.04816; verify: sửa 2 page cite, bổ sung RKNN quantized_algorithm ✓API ref p.8 |
-| quant_whitepaper_2021nagel | 02_quantization | wip | arXiv 2106.08295 |
+| quant_whitepaper_2021nagel | 02_quantization | done | arXiv 2106.08295 |
 | quant_yolov7_2024 | 02_quantization | wip | arXiv 2407.04943 |
 | integer_only_quant_2018jacob | 02_quantization | todo | arXiv 1712.05877 |
 | fully_quant_od_2019li | 02_quantization | todo | CVPR 2019 CVF |
