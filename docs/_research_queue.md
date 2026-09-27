@@ -41,7 +41,7 @@ Trạng thái: `todo` / `wip` (dở, chưa commit) / `done` (đã commit) / `ski
 | qarepvgg_quant_2024chu | 08_npu_friendly_arch | done | arXiv 2212.01593 |
 | actnas_yolo_2025sah | 08_npu_friendly_arch | done | CVPRW 2025 |
 | yolov6_hwfriendly_2022li | 08_npu_friendly_arch | done | arXiv 2209.02976 |
-| mobileone_reparam_2023vasu | 08_npu_friendly_arch | todo | CVPR 2023 |
+| mobileone_reparam_2023vasu | 08_npu_friendly_arch | done | CVPR 2023 |
 | shufflenetv2_guidelines_2018ma | 08_npu_friendly_arch | todo | arXiv 1807.11164 |
 | fasternet_pconv_2023chen | 08_npu_friendly_arch | todo | CVPR 2023 |
 | dbb_reparam_2021ding | 08_npu_friendly_arch | todo | CVPR 2021 |
