@@ -39,7 +39,7 @@ Trạng thái: `todo` / `wip` (dở, chưa commit) / `done` (đã commit) / `ski
 | edge_yolo_rk3588_2023 | 05_rk3588 | todo | MDPI Appl. Sci. 2023, cần tra số bài |
 | repvgg_reparam_2021ding | 08_npu_friendly_arch | done | arXiv 2101.03697 |
 | qarepvgg_quant_2024chu | 08_npu_friendly_arch | done | arXiv 2212.01593 |
-| actnas_yolo_2025sah | 08_npu_friendly_arch | todo | CVPRW 2025 |
+| actnas_yolo_2025sah | 08_npu_friendly_arch | done | CVPRW 2025 |
 | yolov6_hwfriendly_2022li | 08_npu_friendly_arch | todo | arXiv 2209.02976 |
 | mobileone_reparam_2023vasu | 08_npu_friendly_arch | todo | CVPR 2023 |
 | shufflenetv2_guidelines_2018ma | 08_npu_friendly_arch | todo | arXiv 1807.11164 |
