@@ -1,0 +1,12 @@
+[submodule "common"]
+	path = common
+	url = https://github.com/nhat092005/rk3588-common
+[submodule "deploy"]
+	path = deploy
+	url = https://github.com/nhat092005/rk3588-deploy
+[submodule "ai"]
+	path = ai
+	url = https://github.com/nhat092005/rk3588-ai
+[submodule "docs"]
+	path = docs
+	url = https://github.com/nhat092005/rk3588-docs
