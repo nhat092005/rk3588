@@ -1,10 +1,8 @@
 # Entry point of the meta-repo. Run `make init` once after a plain `git clone`.
-.PHONY: init sysroot build-board sync-board
+.PHONY: init sync check sysroot build-board sync-board
 
-# Board access and locations. Override on the CLI, for example: make sysroot BOARD=user@host
-BOARD       ?= minhnhat@192.168.137.49
-BOARD_DIR   ?= rk3588-deploy
-SYSROOT     ?= $(HOME)/sysroots/orangepi5
+include board.mk
+
 BUILD_ARM   := deploy/build-arm
 MAX_GLIBC   ?= 2.35
 
@@ -12,16 +10,36 @@ RKNN_URL     := https://github.com/airockchip/rknn-toolkit2
 RKNN_DIR     := 3rdparty/rknn-toolkit2
 RKNN_TAG     := v2.3.2
 RKNN_API_DIR := rknpu2/runtime/Linux/librknn_api/include
+# Only these two of the 15 wheels (269 MB) are needed: PC rknn-toolkit2 (Python 3.12) and board RKNN-Toolkit-Lite2 (3.10)
+RKNN_WHEELS  := rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl \
+                rknn-toolkit-lite2/packages/rknn_toolkit_lite2-2.3.2-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
+
+VENV := .venv/bin
 
 BOARD_BINARIES := app/rk3588_deploy probes/probe_link probes/probe_infer test/test_logger
 
 # rknn-toolkit2 is about 2 GB. `git submodule update` would check out all of it before any sparse rule applies,
-# so the first clone is done here (blobless + sparse, about 600 KB). The commit must equal the pin of the submodule.
+# so the first clone is done here (blobless + sparse: headers and two wheels, about 40 MB). The commit must equal the pin.
 init:
 	git submodule update --init common ai deploy docs
 	@[ -e $(RKNN_DIR)/.git ] || git clone -q --filter=blob:none --sparse --depth 1 --branch $(RKNN_TAG) $(RKNN_URL) $(RKNN_DIR)
-	git -C $(RKNN_DIR) sparse-checkout set $(RKNN_API_DIR)
+	git -C $(RKNN_DIR) sparse-checkout set --no-cone /$(RKNN_API_DIR)/ $(addprefix /,$(RKNN_WHEELS))
 	@git submodule status $(RKNN_DIR)
+
+# One .venv for common and ai (uv workspace, see pyproject.toml). Run after make init.
+sync:
+	uv sync --all-packages
+
+# Gate of STANDARDS.md: lint, format, one home per name, no absolute or legacy paths, tests of each repo.
+check:
+	$(VENV)/ruff check common ai deploy tools
+	$(VENV)/ruff format --check common ai deploy tools
+	$(VENV)/python tools/check_overlap.py
+	@for r in . common ai deploy; do \
+		git -C $$r grep -nI -e '/home/' -e '\.\./rk3588-legacy' -- . ':!Makefile' ':!docs' ':!3rdparty' \
+		&& { echo "ERROR: absolute or legacy path in tracked files of $$r"; exit 1; }; \
+	done; true
+	@for r in common ai; do (cd $$r && ../$(VENV)/python -m pytest -q tests) || [ $$? -eq 5 ] || exit 1; done
 
 # Copy the board's headers and libs to the PC (about 2 GB, incremental). Redo after a board OS or librknnrt change.
 sysroot:
