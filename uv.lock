@@ -655,10 +655,14 @@ version = "0.0.0"
 source = { editable = "common" }
 dependencies = [
     { name = "numpy" },
+    { name = "opencv-python" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "numpy" }]
+requires-dist = [
+    { name = "numpy" },
+    { name = "opencv-python" },
+]
 
 [[package]]
 name = "rknn-toolkit2"
