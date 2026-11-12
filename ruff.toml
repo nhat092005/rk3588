@@ -1,0 +1,16 @@
+# One lint and format config for every Python file of the meta-repo (member pyproject files have no [tool.ruff]).
+line-length = 120
+target-version = "py312"
+extend-exclude = ["3rdparty", "docs"]
+
+# Code that runs on the board (Python 3.10) must not use newer syntax.
+[per-file-target-version]
+"common/**" = "py310"
+"ai/ai/board/**" = "py310"
+"deploy/python/**" = "py310"
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[lint.isort]
+known-first-party = ["ai", "rk3588_common"]
