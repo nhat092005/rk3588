@@ -1,0 +1,15 @@
+Repo:    https://github.com/orangepi-xunlong/linux-orangepi
+Branch:  orange-pi-6.1-rk35xx
+Commit:  f6eedab0cbe9b4be3f855661a0a7e7008812d40a (2026-08-20)
+Path:    drivers/rknpu/
+Driver:  rknpu 0.9.8 20240828 (include/rknpu_drv.h:32-35)
+Board:   dmesg "Initialized rknpu 0.9.8 20240828 for fdab0000.npu", kernel 6.1.99-rockchip-rk3588 (read 2026-10-10)
+Board kernel config: CONFIG_ROCKCHIP_RKNPU_DEBUG_FS=y, CONFIG_ROCKCHIP_RKNPU_SRAM not set, CONFIG_ROCKCHIP_RKNPU_FENCE not set
+Note: Orange Pi vendor fork of the Rockchip kernel, not the rockchip-linux/kernel tree itself. Not yet diffed against it.
+Diff vs rockchip-linux/kernel develop-6.1 (commit 77168c8d5ab82399f65a80e9f807b50ba37cf483, 2026-07-29), drivers/rknpu, done 2026-10-10:
+  same version string 0.9.8 20240828. Identical: rknpu_debugger.c, rknpu_job.c, include/rknpu_job.h, include/rknpu_ioctl.h, Makefile, Kconfig.
+  Differ: rknpu_drv.c, rknpu_devfreq.c, rknpu_iommu.c, rknpu_mem.c, include/rknpu_mem.h (RV1126B support, dma-buf mapping, kern_addr_valid).
+DTS (downloaded 2026-10-11): dts/rk3588s.dtsi = arch/arm64/boot/dts/rockchip/rk3588s.dtsi at the same commit f6eedab0,
+  from https://raw.githubusercontent.com/orangepi-xunlong/linux-orangepi/f6eedab0cbe9b4be3f855661a0a7e7008812d40a/arch/arm64/boot/dts/rockchip/rk3588s.dtsi
+  6958 lines, sha256 1f995cc16e34fd4f987e94fa2071890211d6083fbc54b6edd484ad3fd07c410d.
+  Cited lines checked 2026-10-11: 3477 operating-points-v2 = <&npu_opp_table>; 3478 iommus = <&rknpu_mmu>; 3534-3655 "RK3588 npu OPPs" (opp-300000000 .. opp-1000000000, first opp-microvolt of opp-1000000000 = 850000); 3658-3709 opp-j-m-* (max opp-j-m-950000000); 3713 compatible = "rockchip,iommu-v2".
