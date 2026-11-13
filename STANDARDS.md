@@ -71,6 +71,7 @@ Board results are copied back into the repo whose code produced them. Every resu
 | `make init` | Submodules, sparse rknn-toolkit2 (headers and two wheels) |
 | `make sync` | One `.venv` for `common` and `ai` from `uv.lock` |
 | `make check` | ruff lint and format, overlap check, path check, tests of each repo |
+| `make sync-board`, `make setup-board`, `make check-board` | Copy to `~/rk3588-board/` (meta-repo layout), build the board venv, run the board checks |
 
 - PC Python 3.12. Board Python 3.10: `common/`, `ai/ai/board/` and `deploy/python/` must stay 3.10 compatible (ruff `per-file-target-version`).
 - ai commands run from `ai/` (`../.venv/bin/python -m ai.<module>`). The ai project is not installed, `rk3588_common` is (editable).

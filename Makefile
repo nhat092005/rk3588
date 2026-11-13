@@ -1,7 +1,10 @@
 # Entry point of the meta-repo. Run `make init` once after a plain `git clone`.
-.PHONY: init sync check sysroot build-board sync-board
+.PHONY: init sync check sysroot build-board sync-board setup-board check-board
 
 include board.mk
+
+# bash: check-board uses process substitution
+SHELL := /bin/bash
 
 BUILD_ARM   := deploy/build-arm
 MAX_GLIBC   ?= 2.35
@@ -11,8 +14,8 @@ RKNN_DIR     := 3rdparty/rknn-toolkit2
 RKNN_TAG     := v2.3.2
 RKNN_API_DIR := rknpu2/runtime/Linux/librknn_api/include
 # Only these two of the 15 wheels (269 MB) are needed: PC rknn-toolkit2 (Python 3.12) and board RKNN-Toolkit-Lite2 (3.10)
-RKNN_WHEELS  := rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl \
-                rknn-toolkit-lite2/packages/rknn_toolkit_lite2-2.3.2-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
+RKNN_PC_WHEEL    := rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+RKNN_BOARD_WHEEL := rknn-toolkit-lite2/packages/rknn_toolkit_lite2-2.3.2-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
 
 VENV := .venv/bin
 
@@ -23,7 +26,7 @@ BOARD_BINARIES := app/rk3588_deploy probes/probe_link probes/probe_infer test/te
 init:
 	git submodule update --init common ai deploy docs
 	@[ -e $(RKNN_DIR)/.git ] || git clone -q --filter=blob:none --sparse --depth 1 --branch $(RKNN_TAG) $(RKNN_URL) $(RKNN_DIR)
-	git -C $(RKNN_DIR) sparse-checkout set --no-cone /$(RKNN_API_DIR)/ $(addprefix /,$(RKNN_WHEELS))
+	git -C $(RKNN_DIR) sparse-checkout set --no-cone /$(RKNN_API_DIR)/ /$(RKNN_PC_WHEEL) /$(RKNN_BOARD_WHEEL)
 	@git submodule status $(RKNN_DIR)
 
 # One .venv for common and ai (uv workspace, see pyproject.toml). Run after make init.
@@ -61,8 +64,26 @@ build-board:
 		[ "$$highest" = "$(MAX_GLIBC)" ] || { echo "ERROR: $$bin needs a newer glibc than the board"; exit 1; }; \
 	done
 
-# Copy binaries and shared Python to ~/$(BOARD_DIR) on the board. Separate from the legacy ~/rk3588.
+# Fill ~/$(BOARD_DIR) on the board with the meta-repo layout: deploy/bin (cross-built), deploy/sh, deploy/python,
+# deploy/requirements-board.txt, common/python, common/tests and the RKNN-Toolkit-Lite2 wheel. Separate from the legacy ~/rk3588.
+RSYNC := rsync -a --delete --exclude __pycache__ --exclude '*.egg-info' --exclude .gitkeep
 sync-board: build-board
-	ssh $(BOARD) 'mkdir -p $(BOARD_DIR)/bin $(BOARD_DIR)/common'
-	rsync -a $(addprefix $(BUILD_ARM)/,$(BOARD_BINARIES)) $(BOARD):$(BOARD_DIR)/bin/
-	rsync -a --delete common/python/ $(BOARD):$(BOARD_DIR)/common/python/
+	ssh $(BOARD) 'mkdir -p $(BOARD_DIR)/deploy/bin $(BOARD_DIR)/common $(BOARD_DIR)/$(RKNN_DIR)/$(dir $(RKNN_BOARD_WHEEL))'
+	rsync -a $(addprefix $(BUILD_ARM)/,$(BOARD_BINARIES)) $(BOARD):$(BOARD_DIR)/deploy/bin/
+	$(RSYNC) deploy/sh/ $(BOARD):$(BOARD_DIR)/deploy/sh/
+	$(RSYNC) deploy/python/ $(BOARD):$(BOARD_DIR)/deploy/python/
+	rsync -a deploy/requirements-board.txt $(BOARD):$(BOARD_DIR)/deploy/
+	$(RSYNC) common/python/ $(BOARD):$(BOARD_DIR)/common/python/
+	$(RSYNC) common/tests/ $(BOARD):$(BOARD_DIR)/common/tests/
+	rsync -a $(RKNN_DIR)/$(RKNN_BOARD_WHEEL) $(BOARD):$(BOARD_DIR)/$(RKNN_DIR)/$(RKNN_BOARD_WHEEL)
+
+# Create or update the board venv ~/$(BOARD_DIR)/.venv (no sudo, needs internet on the board). Run after sync-board.
+setup-board:
+	ssh $(BOARD) 'bash $(BOARD_DIR)/deploy/sh/setup_board.sh'
+
+# On the board: installed lock_freq.sh has the same code as deploy/sh/lock_freq.sh, rk3588_common tests pass.
+check-board:
+	@diff <(grep -v '^\s*#' deploy/sh/lock_freq.sh) <(ssh $(BOARD) "grep -v '^\s*#' /usr/local/sbin/lock_freq.sh") \
+		&& echo "lock_freq.sh: installed code equals deploy/sh/lock_freq.sh" \
+		|| { echo "ERROR: /usr/local/sbin/lock_freq.sh differs, reinstall it with sudo"; exit 1; }
+	ssh $(BOARD) 'cd $(BOARD_DIR)/common && ../.venv/bin/python -m pytest -q -p no:cacheprovider tests'
