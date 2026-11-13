@@ -38,7 +38,7 @@ A public top-level name (function, class, constant) is defined in one repo only.
 | C++ | `deploy/.clang-tidy` | - |
 | Training run | `<dataset>_<model>_<N>ep_s<seed>` | `ppe5_yolov8n_baseline_100ep_s0` |
 | Experiment directory | `experiments/<domain>/<topic>/<YYYYMMDD>_<slug>/` | `experiments/npu/latency/20261115_core-mask-sweep/` |
-| Experiment id | `<topic>-<YYYYMMDD>-<slug>`, one row in `experiments/index.csv` | `latency-20261115-core-mask-sweep` |
+| Experiment record | `notes.md` in the experiment directory (goal, method, results, result files). The directory is the only index | `experiments/npu/latency/20261115_core-mask-sweep/notes.md` |
 | Dates in names | `YYYYMMDD` | `20261113` |
 
 Old experiment codes (`g4`, `q2c`, `x1`, `e2b`, `a9`, ...) appear only in `ai/LEGACY.md`.
@@ -60,7 +60,7 @@ No absolute paths in tracked files or in data manifests (`dataset.yaml`, symlink
 data/<ds>/raw -> scripts/data/prepare_<ds>.py -> data/<ds>/processed (relative links)
   -> train -> experiments/runs/<run_id>/
   -> evaluate / export / bench -> JSON with provenance
-  -> experiments/leaderboards/<ds>.csv, experiments/index.csv
+  -> experiments/leaderboards/<ds>.csv, experiments/<domain>/<topic>/<YYYYMMDD>_<slug>/notes.md
   -> results/<ds>/ tables
 ```
 
