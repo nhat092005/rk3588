@@ -76,6 +76,7 @@ Board results are copied back into the repo whose code produced them. Every resu
 | `make sync-board` (`sync-board-py` without the C++ build), `make setup-board`, `make check-board` | Copy to `~/rk3588-board/` (meta-repo layout), build the board venv, run the board checks |
 | `make -C ai help` | Targets of rk3588-ai (train, evaluate, export, benches, phases) |
 
+- Python style: PEP 8 and PEP 257 through ruff (root `ruff.toml`): line length 79, comments and docstrings 72, docstrings and type annotations on non-test code.
 - PC Python 3.12. Board Python 3.10: `common/`, `ai/ai/board/` and `deploy/python/` must stay 3.10 compatible (ruff `per-file-target-version`).
 - ai commands run from `ai/` (`../.venv/bin/python -m ai.<module>`). The ai project is not installed, `rk3588_common` is (editable).
 - Exact pins where results depend on the version: torch, ultralytics, onnx, onnxslim, rknn-toolkit2.
