@@ -74,7 +74,7 @@ Board results are copied back into the repo whose code produced them. Every resu
 | `make sync` | One `.venv` for `common` and `ai` from `uv.lock` |
 | `make check` | ruff lint and format, overlap check, path check, tests of each repo |
 | `make sync-board` (`sync-board-py` without the C++ build), `make setup-board`, `make check-board` | Copy to `~/rk3588-board/` (meta-repo layout), build the board venv, run the board checks |
-| `make -C ai help` | Targets of rk3588-ai (train, evaluate, export, benches, phases) |
+| `make -C ai help` | Targets of rk3588-ai (train, evaluate, export, benches) |
 
 - Python style: PEP 8 and PEP 257 through ruff (root `ruff.toml`): line length 79, comments and docstrings 72, docstrings and type annotations on non-test code.
 - PC Python 3.12. Board Python 3.10: `common/`, `ai/ai/board/` and `deploy/python/` must stay 3.10 compatible (ruff `per-file-target-version`).
