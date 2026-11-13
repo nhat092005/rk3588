@@ -6,7 +6,7 @@ Rules for every repo of the `rk3588` meta-repo. `make check` enforces the ones a
 
 | Repo | Responsibility | May import |
 |---|---|---|
-| `common` (rk3588-common) | Contracts shared by PC and board: model input/output (`model_io`), board telemetry (`board_env`), result provenance (`provenance`). Package `rk3588_common` | numpy, opencv-python-headless, psutil. Nothing of this project |
+| `common` (rk3588-common) | Contracts shared by PC and board: model input/output (`model_io`), board telemetry (`board_env`), result provenance (`provenance`). Package `rk3588_common` | numpy, OpenCV (`opencv-python` on the PC, `opencv-python-headless` of the same version on the board), psutil. Nothing of this project |
 | `ai` (rk3588-ai) | Datasets, training, export, evaluation, NPU and model measurement, including the research harness that runs on the board (`ai/ai/board/`) | `rk3588_common`, torch, ultralytics, rknn-toolkit2 |
 | `deploy` (rk3588-deploy) | The product app (C++ `app/`, board-side `python/`) and the board environment (`sh/` setup, frequency lock, rknn_server, board requirements) | `rk3588_common` (Python). C++ is checked against `rk3588_common` outputs |
 | `docs` (rk3588-docs) | Documentation site. Kept as is, pinned | - |
