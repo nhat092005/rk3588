@@ -1,5 +1,5 @@
 # One lint and format config for every Python file of the meta-repo (member pyproject files have no [tool.ruff]).
-line-length = 120
+line-length = 79
 target-version = "py312"
 extend-exclude = ["3rdparty", "docs"]
 
@@ -9,8 +9,45 @@ extend-exclude = ["3rdparty", "docs"]
 "ai/ai/board/**" = "py310"
 "deploy/python/**" = "py310"
 
+[format]
+docstring-code-format = true
+
 [lint]
-select = ["E", "F", "W", "I", "B", "UP"]
+select = [
+    "E", "F", "W", "I", "B", "UP", "N", "D",
+    "ANN", "C4", "A", "PTH", "PT", "NPY",
+    "BLE", "TRY", "RSE", "PL", "T10", "ERA", "SLF",
+    "SIM", "RET", "PIE", "ARG", "C90", "PERF", "FURB", "RUF", "FBT",
+]
+ignore = [
+    "ARG001",
+    "ARG002",
+    "C901",
+    "FBT001",
+    "FBT002",
+    "FBT003",
+    "PLC0415",
+    "PLR0913",
+    "PLR0917",
+    "PLR2004",
+    "RUF001",
+    "SIM300",
+    "SLF001",
+    "TRY003",
+    "TRY004",
+]
+
+[lint.per-file-ignores]
+"**/tests/**" = ["ANN", "D"]
+
+[lint.pycodestyle]
+max-doc-length = 72
+
+[lint.pydocstyle]
+convention = "pep257"
+
+[lint.mccabe]
+max-complexity = 10
 
 [lint.isort]
 known-first-party = ["ai", "rk3588_common"]

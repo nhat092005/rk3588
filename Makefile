@@ -1,5 +1,5 @@
 # Entry point of the meta-repo. Run `make init` once after a plain `git clone`.
-.PHONY: init sync check sysroot build-board sync-board setup-board check-board
+.PHONY: init sync check sysroot build-board sync-board sync-board-py setup-board check-board
 
 include board.mk
 
@@ -64,18 +64,24 @@ build-board:
 		[ "$$highest" = "$(MAX_GLIBC)" ] || { echo "ERROR: $$bin needs a newer glibc than the board"; exit 1; }; \
 	done
 
-# Fill ~/$(BOARD_DIR) on the board with the meta-repo layout: deploy/bin (cross-built), deploy/sh, deploy/python,
-# deploy/requirements-board.txt, common/python, common/tests and the RKNN-Toolkit-Lite2 wheel. Separate from the legacy ~/rk3588.
+# Fill ~/$(BOARD_DIR) on the board with the meta-repo layout. sync-board-py: everything but the binaries
+# (deploy/sh, deploy/python, deploy/requirements-board.txt, common/python, common/tests, ai/ai/board, the
+# RKNN-Toolkit-Lite2 wheel). sync-board: that plus the cross-built deploy/bin. Separate from the legacy ~/rk3588.
 RSYNC := rsync -a --delete --exclude __pycache__ --exclude '*.egg-info' --exclude .gitkeep
-sync-board: build-board
-	ssh $(BOARD) 'mkdir -p $(BOARD_DIR)/deploy/bin $(BOARD_DIR)/common $(BOARD_DIR)/$(RKNN_DIR)/$(dir $(RKNN_BOARD_WHEEL))'
-	rsync -a $(addprefix $(BUILD_ARM)/,$(BOARD_BINARIES)) $(BOARD):$(BOARD_DIR)/deploy/bin/
+sync-board-py:
+	ssh $(BOARD) 'mkdir -p $(BOARD_DIR)/deploy $(BOARD_DIR)/common $(BOARD_DIR)/ai/ai $(BOARD_DIR)/$(RKNN_DIR)/$(dir $(RKNN_BOARD_WHEEL))'
 	$(RSYNC) deploy/sh/ $(BOARD):$(BOARD_DIR)/deploy/sh/
 	$(RSYNC) deploy/python/ $(BOARD):$(BOARD_DIR)/deploy/python/
 	rsync -a deploy/requirements-board.txt $(BOARD):$(BOARD_DIR)/deploy/
 	$(RSYNC) common/python/ $(BOARD):$(BOARD_DIR)/common/python/
 	$(RSYNC) common/tests/ $(BOARD):$(BOARD_DIR)/common/tests/
+	rsync -a ai/ai/__init__.py $(BOARD):$(BOARD_DIR)/ai/ai/
+	$(RSYNC) ai/ai/board/ $(BOARD):$(BOARD_DIR)/ai/ai/board/
 	rsync -a $(RKNN_DIR)/$(RKNN_BOARD_WHEEL) $(BOARD):$(BOARD_DIR)/$(RKNN_DIR)/$(RKNN_BOARD_WHEEL)
+
+sync-board: build-board sync-board-py
+	ssh $(BOARD) 'mkdir -p $(BOARD_DIR)/deploy/bin'
+	rsync -a $(addprefix $(BUILD_ARM)/,$(BOARD_BINARIES)) $(BOARD):$(BOARD_DIR)/deploy/bin/
 
 # Create or update the board venv ~/$(BOARD_DIR)/.venv (no sudo, needs internet on the board). Run after sync-board.
 setup-board:
