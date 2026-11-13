@@ -656,12 +656,14 @@ source = { editable = "common" }
 dependencies = [
     { name = "numpy" },
     { name = "opencv-python" },
+    { name = "psutil" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "numpy" },
     { name = "opencv-python" },
+    { name = "psutil" },
 ]
 
 [[package]]
