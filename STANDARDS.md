@@ -23,6 +23,8 @@ The repo is chosen by responsibility, not by where the code runs. Data lives in 
 | Paths of ai data and results | `ai/ai/paths.py` |
 | Python dependencies and versions | member `pyproject.toml` + root `uv.lock` |
 | Lint and format settings | root `ruff.toml` |
+| Evaluation score threshold `EVAL_CONF`, box normalization rule of RKNN exports | `rk3588_common.model_io` |
+| Bench warmup `WARMUP` | `ai.board.bench` |
 
 A public top-level name (function, class, constant) is defined in one repo only. `tools/check_overlap.py` fails otherwise. When two repos need the same logic, it moves to `common`. Do not copy it.
 
@@ -71,7 +73,8 @@ Board results are copied back into the repo whose code produced them. Every resu
 | `make init` | Submodules, sparse rknn-toolkit2 (headers and two wheels) |
 | `make sync` | One `.venv` for `common` and `ai` from `uv.lock` |
 | `make check` | ruff lint and format, overlap check, path check, tests of each repo |
-| `make sync-board`, `make setup-board`, `make check-board` | Copy to `~/rk3588-board/` (meta-repo layout), build the board venv, run the board checks |
+| `make sync-board` (`sync-board-py` without the C++ build), `make setup-board`, `make check-board` | Copy to `~/rk3588-board/` (meta-repo layout), build the board venv, run the board checks |
+| `make -C ai help` | Targets of rk3588-ai (train, evaluate, export, benches, phases) |
 
 - PC Python 3.12. Board Python 3.10: `common/`, `ai/ai/board/` and `deploy/python/` must stay 3.10 compatible (ruff `per-file-target-version`).
 - ai commands run from `ai/` (`../.venv/bin/python -m ai.<module>`). The ai project is not installed, `rk3588_common` is (editable).

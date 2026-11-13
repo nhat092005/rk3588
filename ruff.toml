@@ -11,6 +11,9 @@ extend-exclude = ["3rdparty", "docs"]
 
 [lint]
 select = ["E", "F", "W", "I", "B", "UP"]
+# The formatter keeps lines within line-length wherever it can split them. E501 would only flag long strings and
+# comments of migrated code, which the formatter leaves as they are.
+ignore = ["E501"]
 
 [lint.isort]
 known-first-party = ["ai", "rk3588_common"]
