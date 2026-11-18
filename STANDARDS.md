@@ -35,7 +35,7 @@ A public top-level name (function, class, constant) is defined in one repo only.
 | Python module, function, variable | snake_case | `model_io.py`, `postprocess_raw` |
 | Python constant | UPPER_CASE | `IMGSZ` |
 | Python packages | `ai` (in rk3588-ai), `rk3588_common` | `from rk3588_common.model_io import preprocess` |
-| C++ | `deploy/.clang-tidy` | - |
+| C++ | `deploy/CODING_STANDARD.md` (checked by `deploy/.clang-tidy`) | - |
 | Training run | `<dataset>_<model>_<N>ep_s<seed>` | `ppe5_yolov8n_baseline_100ep_s0` |
 | Experiment directory | `experiments/<domain>/<topic>/<YYYYMMDD>_<slug>/` | `experiments/npu/latency/20261115_core-mask-sweep/` |
 | Experiment record | `notes.md` in the experiment directory (goal, method, results, result files). The directory is the only index | `experiments/npu/latency/20261115_core-mask-sweep/notes.md` |
@@ -72,11 +72,12 @@ Board results are copied back into the repo whose code produced them. Every resu
 |---|---|
 | `make init` | Submodules, sparse rknn-toolkit2 (headers and two wheels) |
 | `make sync` | One `.venv` for `common` and `ai` from `uv.lock` |
-| `make check` | ruff lint and format, overlap check, path check, tests of each repo |
+| `make check` | ruff lint and format, shellcheck, overlap check, path check, tests of each repo |
 | `make sync-board` (`sync-board-py` without the C++ build), `make setup-board`, `make check-board` | Copy to `~/rk3588-board/` (meta-repo layout), build the board venv, run the board checks |
 | `make -C ai help` | Targets of rk3588-ai (train, evaluate, export, benches) |
 
 - Python style: PEP 8 and PEP 257 through ruff (root `ruff.toml`): line length 79, comments and docstrings 72, docstrings and type annotations on non-test code.
+- Shell style (`deploy/sh/`): bash, ShellCheck with no finding at its default severity (`shellcheck deploy/sh/*/*.sh`, install: `uv tool install shellcheck-py`), and the Google Shell Style Guide: 2-space indent, 80 columns, quoted `"${var}"`, `[[ ]]`, `local`, `readonly` constants, a `main` function, a header comment on every file and on every function that is not obvious and short.
 - PC Python 3.12. Board Python 3.10: `common/`, `ai/ai/board/` and `deploy/python/` must stay 3.10 compatible (ruff `per-file-target-version`).
 - ai commands run from `ai/` (`../.venv/bin/python -m ai.<module>`). The ai project is not installed, `rk3588_common` is (editable).
 - Exact pins where results depend on the version: torch, ultralytics, onnx, onnxslim, rknn-toolkit2.
