@@ -25,7 +25,7 @@ Update pins after a sub-repo moves: commit inside the sub-repo, push, then commi
 | `make sysroot` | Copy the board's `/usr/include` and `/usr/lib` to `~/sysroots/orangepi5` (about 2 GB, incremental) |
 | `make build-board` | Cross-compile `deploy/` for the board, fail if a binary needs glibc newer than the board (`MAX_GLIBC`, default 2.35) |
 | `make sync-board` | Build, then fill `~/rk3588-board/` on the board: `deploy/bin` plus everything of `sync-board-py` |
-| `make sync-board-py` | Python side only, no build: `deploy/sh`, `deploy/python`, `deploy/requirements-board.txt`, `common/python`, `common/tests`, `ai/ai/board`, the RKNN-Toolkit-Lite2 wheel |
+| `make sync-board-py` | Python side only, no build: `deploy/sh`, `deploy/python`, `deploy/resource` (config and model), `deploy/requirements-board.txt`, `common/python`, `common/tests`, `ai/ai/board`, the RKNN-Toolkit-Lite2 wheel |
 | `make setup-board` | Create or update the board venv `~/rk3588-board/.venv` (needs internet on the board) |
 | `make check-board` | On the board (run `make sync-board` first): installed `/usr/local/sbin/lock_freq.sh` has the code of `deploy/sh/env/lock_freq.sh`, `rk3588_common` tests pass, every C++ test passes (`deploy/sh/env/run_tests.sh`; `test_npu_infer` uses `BOARD_MODEL`, default `~/rk3588-board/rknn/best-rk3588.rknn`, skipped when missing) |
 

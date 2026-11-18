@@ -19,7 +19,7 @@ RKNN_BOARD_WHEEL := rknn-toolkit-lite2/packages/rknn_toolkit_lite2-2.3.2-cp310-c
 
 VENV := .venv/bin
 
-BOARD_BINARIES := app/rk3588_deploy probes/device/probe_link probes/device/probe_infer probes/device/probe_camera probes/device/probe_dmabuf probes/stage/probe_letterbox probes/stage/probe_jpeg probes/stage/probe_overlay probes/stage/probe_h265 probes/pipeline/probe_threads probes/pipeline/probe_output probes/pipeline/probe_disk_write probes/stage/probe_tracker test/logger/test_logger test/dmabuf/test_dmabuf test/rga/test_letterbox_layout test/rga/test_box_mapper test/rga/test_rga_letterbox test/npu/test_npu_infer test/postproc/test_postprocess test/tracker/test_tracker test/rule/test_violation_rule test/rga/test_rga_snapshot test/rga/test_rga_overlay test/rga/test_rga_labels test/label/test_label_text test/jpeg/test_jpeg_encoder test/video/test_video_encoder test/video/test_hevc_nal test/options/test_app_options test/stats/test_stage_stats test/os/test_mailbox test/clip/test_clip_recorder test/store/test_violation_retention test/record/test_packet_queue test/record/test_segment_writer test/record/test_recording_retention test/store/test_volume test/store/test_violation_store
+BOARD_BINARIES := app/rk3588_deploy probes/device/probe_link probes/device/probe_infer probes/device/probe_camera probes/device/probe_dmabuf probes/stage/probe_letterbox probes/stage/probe_jpeg probes/stage/probe_overlay probes/stage/probe_h265 probes/pipeline/probe_threads probes/pipeline/probe_output probes/pipeline/probe_disk_write probes/stage/probe_tracker test/base/logger/test_logger test/hardware/dmabuf/test_dmabuf test/hardware/rga/test_letterbox_layout test/hardware/rga/test_box_mapper test/hardware/rga/test_rga_letterbox test/hardware/npu/test_npu_infer test/vision/postproc/test_postprocess test/vision/tracker/test_tracker test/vision/rule/test_violation_rule test/hardware/rga/test_rga_snapshot test/hardware/rga/test_rga_overlay test/hardware/rga/test_rga_labels test/hardware/label/test_label_text test/hardware/jpeg/test_jpeg_encoder test/hardware/video/test_video_encoder test/hardware/video/test_hevc_nal test/runtime/options/test_app_options test/base/stats/test_stage_stats test/base/os/test_mailbox test/storage/clip/test_clip_recorder test/storage/store/test_violation_retention test/storage/record/test_packet_queue test/storage/record/test_segment_writer test/storage/record/test_recording_retention test/storage/store/test_volume test/base/config/test_config_json test/base/config/test_file_text test/storage/store/test_violation_store
 
 # rknn-toolkit2 is about 2 GB. `git submodule update` would check out all of it before any sparse rule applies,
 # so the first clone is done here (blobless + sparse: headers and two wheels, about 40 MB). The commit must equal the pin.
@@ -65,7 +65,7 @@ build-board:
 	done
 
 # Fill ~/$(BOARD_DIR) on the board with the meta-repo layout. sync-board-py: everything but the binaries
-# (deploy/sh, deploy/python, deploy/tools, deploy/requirements-board.txt, common/python, common/tests, ai/ai/board, the
+# (deploy/sh, deploy/python, deploy/tools, deploy/resource, deploy/requirements-board.txt, common/python, common/tests, ai/ai/board, the
 # RKNN-Toolkit-Lite2 wheel). sync-board: that plus the cross-built deploy/bin. Separate from the legacy ~/rk3588.
 RSYNC := rsync -a --delete --exclude __pycache__ --exclude '*.egg-info' --exclude .gitkeep
 sync-board-py:
@@ -73,6 +73,7 @@ sync-board-py:
 	$(RSYNC) deploy/sh/ $(BOARD):$(BOARD_DIR)/deploy/sh/
 	$(RSYNC) deploy/python/ $(BOARD):$(BOARD_DIR)/deploy/python/
 	$(RSYNC) deploy/tools/ $(BOARD):$(BOARD_DIR)/deploy/tools/
+	$(RSYNC) deploy/resource/ $(BOARD):$(BOARD_DIR)/deploy/resource/
 	rsync -a deploy/requirements-board.txt $(BOARD):$(BOARD_DIR)/deploy/
 	$(RSYNC) common/python/ $(BOARD):$(BOARD_DIR)/common/python/
 	$(RSYNC) common/tests/ $(BOARD):$(BOARD_DIR)/common/tests/
