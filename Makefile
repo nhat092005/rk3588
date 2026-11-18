@@ -92,7 +92,7 @@ setup-board:
 
 # On the board: installed lock_freq.sh has the code of deploy/sh/env/lock_freq.sh, rk3588_common tests pass, C++ tests pass.
 # Run sync-board first. BOARD_MODEL is the .rknn of test_npu_infer (skipped when the file does not exist).
-BOARD_MODEL ?= ~/$(BOARD_DIR)/rknn/best-rk3588.rknn
+BOARD_MODEL ?= ~/$(BOARD_DIR)/deploy/resource/rknn/best-rk3588.rknn
 check-board:
 	@diff <(grep -v '^\s*#' deploy/sh/env/lock_freq.sh) <(ssh $(BOARD) "grep -v '^\s*#' /usr/local/sbin/lock_freq.sh") \
 		&& echo "lock_freq.sh: installed code equals deploy/sh/env/lock_freq.sh" \
