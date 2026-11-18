@@ -219,6 +219,19 @@ wheels = [
 ]
 
 [[package]]
+name = "lap"
+version = "0.5.14"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e7/57/acf44b2f4be1f25eb1c8d07586ea07cfd27f5a6bc95daa7a59f9784bba32/lap-0.5.14.tar.gz", hash = "sha256:06488beb256649a291dc1d8bbd11920c8dc70c3e61057645f68131c479a2a549", size = 1545593, upload-time = "2026-11-03T12:33:14.067Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/74/35/437ba66f97c84df774bcb99c6786625504f92eaba87ada6eaadbe0320555/lap-0.5.14-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:e6be7a1e5444ab61e5bbc2f2ab9aef0b89c34599f254a343514fe3f95d3f2326", size = 1755611, upload-time = "2026-11-03T12:31:45.014Z" },
+    { url = "https://files.pythonhosted.org/packages/38/c7/d1ddaba696a3101b3b71f28daab69e486c0c1ad7d498719e909e94bcd8a4/lap-0.5.14-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:db95612b1120d81e454082f56c1a825789db00009b0acd49c529721130556898", size = 1758348, upload-time = "2026-11-03T12:31:51.473Z" },
+]
+
+[[package]]
 name = "markupsafe"
 version = "3.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -625,6 +638,7 @@ name = "rk3588-ai"
 version = "0.0.0"
 source = { virtual = "ai" }
 dependencies = [
+    { name = "lap" },
     { name = "numpy" },
     { name = "onnx" },
     { name = "onnxslim" },
@@ -638,6 +652,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "lap", specifier = "==0.5.14" },
     { name = "numpy", specifier = "<=1.26.4" },
     { name = "onnx", specifier = "==1.18.0" },
     { name = "onnxslim", specifier = "==0.1.96" },
